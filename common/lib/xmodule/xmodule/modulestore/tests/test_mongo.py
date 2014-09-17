@@ -4,6 +4,7 @@ Unit tests for the Mongo modulestore
 # pylint: disable=no-member
 # pylint: disable=protected-access
 # pylint: disable=no-name-in-module
+# pylint: disable=bad-continuation
 from nose.tools import assert_equals, assert_raises, \
     assert_not_equals, assert_false, assert_true, assert_greater, assert_is_instance, assert_is_none
 # pylint: enable=E0611
@@ -145,6 +146,18 @@ class TestMongoModuleStoreBase(unittest.TestCase):
             verbose=True
         )
 
+        # also import a course under a different course_id (especially ORG)
+        import_course_from_xml(
+            draft_store,
+            999,
+            DATA_DIR,
+            ['test_import_course'],
+            static_content_store=content_store,
+            do_import_static=False,
+            verbose=True,
+            target_id=SlashSeparatedCourseKey('guestx', 'foo', 'bar')
+        )
+
         return content_store, draft_store
 
     @staticmethod
@@ -191,15 +204,18 @@ class TestMongoModuleStore(TestMongoModuleStoreBase):
     def test_get_courses(self):
         '''Make sure the course objects loaded properly'''
         courses = self.draft_store.get_courses()
-        assert_equals(len(courses), 6)
+        assert_equals(len(courses), 7)  # pylint: disable=no-value-for-parameter
         course_ids = [course.id for course in courses]
         for course_key in [
 
             SlashSeparatedCourseKey(*fields)
             for fields in [
-                ['edX', 'simple', '2012_Fall'], ['edX', 'simple_with_draft', '2012_Fall'],
-                ['edX', 'test_import_course', '2012_Fall'], ['edX', 'test_unicode', '2012_Fall'],
-                ['edX', 'toy', '2012_Fall']
+                ['edX', 'simple', '2012_Fall'],
+                ['edX', 'simple_with_draft', '2012_Fall'],
+                ['edX', 'test_import_course', '2012_Fall'],
+                ['edX', 'test_unicode', '2012_Fall'],
+                ['edX', 'toy', '2012_Fall'],
+                ['guestx', 'foo', 'bar']
             ]
         ]:
             assert_in(course_key, course_ids)
@@ -211,6 +227,39 @@ class TestMongoModuleStore(TestMongoModuleStoreBase):
             )
             assert_false(self.draft_store.has_course(mix_cased))
             assert_true(self.draft_store.has_course(mix_cased, ignore_case=True))
+
+    def test_get_org_courses(self):
+        """
+        Make sure that we can query for a filtered list of courses for a given ORG
+        """
+
+        courses = self.draft_store.get_courses(org='guestx')
+        assert_equals(len(courses), 1)  # pylint: disable=no-value-for-parameter
+        course_ids = [course.id for course in courses]
+
+        for course_key in [
+            SlashSeparatedCourseKey(*fields)
+            for fields in [
+                ['guestx', 'foo', 'bar']
+            ]
+        ]:
+            assert_in(course_key, course_ids)  # pylint: disable=no-value-for-parameter
+
+        courses = self.draft_store.get_courses(org='edX')
+        assert_equals(len(courses), 6)  # pylint: disable=no-value-for-parameter
+        course_ids = [course.id for course in courses]
+
+        for course_key in [
+            SlashSeparatedCourseKey(*fields)
+            for fields in [
+                ['edX', 'simple', '2012_Fall'],
+                ['edX', 'simple_with_draft', '2012_Fall'],
+                ['edX', 'test_import_course', '2012_Fall'],
+                ['edX', 'test_unicode', '2012_Fall'],
+                ['edX', 'toy', '2012_Fall']
+            ]
+        ]:
+            assert_in(course_key, course_ids)  # pylint: disable=no-value-for-parameter
 
     def test_no_such_course(self):
         """
