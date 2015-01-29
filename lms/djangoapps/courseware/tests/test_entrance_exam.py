@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 
 from courseware.model_data import FieldDataCache
 from courseware.module_render import get_module, toc_for_course
-from courseware.tests.factories import UserFactory, InstructorFactory
+from courseware.tests.factories import UserFactory, InstructorFactory, StaffFactory
 from courseware.courses import get_entrance_exam_content_info, get_entrance_exam_score
 from milestones.models import MilestoneRelationshipType
 from xmodule.modulestore.django import modulestore
@@ -366,6 +366,12 @@ class EntranceExamTestCases(ModuleStoreTestCase):
         """
         Unit Test: entrance exam message should not be present outside the context of entrance exam subsection.
         """
+        # Login as staff to avoid redirect to entrance exam
+        self.client.logout()
+        staff_user = StaffFactory(course_key=self.course.id)
+        self.client.login(username=staff_user.username, password='test')
+        CourseEnrollment.enroll(staff_user, self.course.id)
+
         url = reverse(
             'courseware_section',
             kwargs={
@@ -512,6 +518,28 @@ class EntranceExamTestCases(ModuleStoreTestCase):
         })
         self.assertEqual(response.status_code, 200)
 
+        unlocked_toc = toc_for_course(
+            self.request,
+            self.course,
+            self.entrance_exam.url_name,
+            self.exam_1.url_name,
+            self.field_data_cache
+        )
+        for toc_section in self.expected_unlocked_toc:
+            self.assertIn(toc_section, unlocked_toc)
+
+    def test_entrance_exame_gating_for_staff(self):
+        """
+        Tests gating is disabled if user is member of staff.
+        """
+
+        # Login as member of staff
+        self.client.logout()
+        staff_user = StaffFactory(course_key=self.course.id)
+        self.client.login(username=staff_user.username, password='test')
+
+        # assert staff has access to all toc
+        self.request.user = staff_user
         unlocked_toc = toc_for_course(
             self.request,
             self.course,
