@@ -1,33 +1,41 @@
 ;(function (define, undefined) {
     'use strict';
-    define(['jquery', 'js/groups/views/cohorts', 'js/groups/collections/cohort', 'js/groups/models/course_cohort_settings'],
+    define(['jquery', 'js/groups/views/cohorts', 'js/groups/collections/cohort', 'js/groups/models/course_cohort_settings',
+            'js/discussion_topics/models/topics', 'js/discussion_topics/collections/topics'],
         function($) {
 
             return function(contentGroups, studioGroupConfigurationsUrl) {
 
                 var cohorts = new edx.groups.CohortCollection(),
-                    courseCohortSettings = new edx.groups.CourseCohortSettingsModel();
+                    courseCohortSettings = new edx.groups.CourseCohortSettingsModel(),
+                    discussionTopics = new edx.discussions.DiscussionTopicsModel();
 
                 var cohortManagementElement = $('.cohort-management');
 
                 cohorts.url = cohortManagementElement.data('cohorts_url');
                 courseCohortSettings.url = cohortManagementElement.data('course_cohort_settings_url');
-
+                discussionTopics.url = cohortManagementElement.data('discussion_topics_url');
+                
                 var cohortsView = new edx.groups.CohortsView({
                     el: cohortManagementElement,
                     model: cohorts,
                     contentGroups: contentGroups,
                     cohortSettings: courseCohortSettings,
                     context: {
+                        discussionTopicsModel: discussionTopics,
                         uploadCohortsCsvUrl: cohortManagementElement.data('upload_cohorts_csv_url'),
                         studioAdvancedSettingsUrl: cohortManagementElement.data('advanced-settings-url'),
                         studioGroupConfigurationsUrl: studioGroupConfigurationsUrl
                     }
                 });
+
                 cohorts.fetch().done(function() {
                     courseCohortSettings.fetch().done(function() {
-                        cohortsView.render();
-                    })
+                        discussionTopics.fetch().done(function() {
+                            cohortsView.render();
+                            //discussionTopicsView.render();
+                        });
+                    });
                 });
             };
     });
