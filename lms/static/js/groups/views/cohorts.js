@@ -287,7 +287,8 @@ var edx = edx || {};
             if (!this.topicsView) {
                 this.topicsView = new DiscussionTopicsView({
                     el: topicsElement,
-                    model: this.context.discussionTopicsModel
+                    model: this.context.discussionTopicsModel,
+                    cohortSettings: this.cohortSettings
                 }).render();
             }
         },
@@ -298,4 +299,4 @@ var edx = edx || {};
     });
 }).call(this, $, _, Backbone, gettext, interpolate_text, edx.groups.CohortModel, edx.groups.CohortEditorView,
     edx.groups.CohortFormView, edx.groups.CourseCohortSettingsNotificationView, NotificationModel, NotificationView,
-    FileUploaderView, edx.discussions.DiscussionTopicsView);
+    FileUploaderView, edx.groups.DiscussionTopicsView);

@@ -1,7 +1,6 @@
 """
 Views related to course groups functionality.
 """
-from copy import deepcopy
 
 from django_future.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
@@ -23,8 +22,7 @@ from courseware.courses import get_course_with_access
 from edxmako.shortcuts import render_to_response
 
 from . import cohorts
-from lms.djangoapps.courseware.courses import get_course_by_id
-from lms.djangoapps.django_comment_client.utils import JsonError, get_discussion_category_map
+from lms.djangoapps.django_comment_client.utils import get_discussion_category_map
 from .models import CourseUserGroup, CourseUserGroupPartitionGroup
 
 log = logging.getLogger(__name__)
@@ -64,14 +62,20 @@ def unlink_cohort_partition_group(cohort):
 
 
 # pylint: disable=invalid-name
-def _get_course_cohort_settings_representation(course_cohort_settings):
+def _get_course_cohort_settings_representation(course, course_cohort_settings):
     """
     Returns a JSON representation of a course cohort settings.
     """
+    cohorted_course_wide_ids, cohorted_inline_ids = get_cohorted_discussion_ids(
+        course,
+        course_cohort_settings.cohorted_discussions
+    )
+
     return {
         'id': course_cohort_settings.id,
         'is_cohorted': course_cohort_settings.is_cohorted,
-        'cohorted_discussions': course_cohort_settings.cohorted_discussions,
+        'cohorted_inline_discussions': cohorted_inline_ids,
+        'cohorted_course_wide_discussions': cohorted_course_wide_ids,
         'always_cohort_inline_discussions': course_cohort_settings.always_cohort_inline_discussions,
     }
 
@@ -92,7 +96,26 @@ def _get_cohort_representation(cohort, course):
     }
 
 
-@require_http_methods(("GET", "PUT", "POST"))
+def get_cohorted_discussion_ids(course, cohorted_discussions):
+    """
+    Returns the cohorted course-wide and content-specific discussion ids separately.
+    """
+    discussions_category = get_discussion_category_map(course)
+    course_wide_ids = [category.get('id') for _, category in discussions_category['entries'].items()]
+
+    cohorted_course_wide_ids = []
+    cohorted_inline_ids = []
+
+    for cohorted_discussion_id in cohorted_discussions:
+        if cohorted_discussion_id in course_wide_ids:
+            cohorted_course_wide_ids.append(cohorted_discussion_id)
+        else:
+            cohorted_inline_ids.append(cohorted_discussion_id)
+
+    return cohorted_course_wide_ids, cohorted_inline_ids
+
+
+@require_http_methods(("GET", "PUT", "POST", "PATCH"))
 @ensure_csrf_cookie
 @expect_json
 @login_required
@@ -102,15 +125,40 @@ def course_cohort_settings_handler(request, course_key_string):
     This will raise 404 if user is not staff.
     GET
         Returns the JSON representation of cohort settings for the course.
-    PUT or POST
+    PUT, POST or PATCH
         Updates the cohort settings for the course. Returns the JSON representation of updated settings.
     """
     course_key = CourseKey.from_string(course_key_string)
-    get_course_with_access(request.user, 'staff', course_key)
-    if request.method == 'GET':
-        cohort_settings = cohorts.get_course_cohort_settings(course_key)
-        return JsonResponse(_get_course_cohort_settings_representation(cohort_settings))
-    else:
+    course = get_course_with_access(request.user, 'staff', course_key)
+    cohort_settings = cohorts.get_course_cohort_settings(course_key)
+
+    if request.method == 'PATCH':
+        cohorted_course_wide_ids, cohorted_inline_ids = get_cohorted_discussion_ids(
+            course,
+            cohort_settings.cohorted_discussions
+        )
+
+        if request.json.get('cohorted_course_wide_discussions'):
+            cohorted_inline_ids.extend(request.json.get('cohorted_course_wide_discussions'))
+            cohorted_discussions = cohorted_inline_ids
+        elif request.json.get('cohorted_inline_discussions'):
+            cohorted_course_wide_ids.extend(request.json.get('cohorted_inline_discussions'))
+            cohorted_discussions = cohorted_course_wide_ids
+        else:
+            cohorted_discussions = cohort_settings.cohorted_discussions
+
+        try:
+            cohort_settings = cohorts.set_course_cohort_settings(
+                course_key,
+                cohorted_discussions=cohorted_discussions,
+                always_cohort_inline_discussions=request.json.get(
+                    'always_cohort_inline_discussions', cohort_settings.always_cohort_inline_discussions
+                )
+            )
+        except ValueError as err:
+            # Note: error message not translated because it is not exposed to the user (UI prevents this state).
+            return JsonResponse({"error": unicode(err)}, 400)
+    elif request.method in ["PUT", "POST"]:
         is_cohorted = request.json.get('is_cohorted')
         if is_cohorted is None:
             # Note: error message not translated because it is not exposed to the user (UI prevents this state).
@@ -122,7 +170,7 @@ def course_cohort_settings_handler(request, course_key_string):
             # Note: error message not translated because it is not exposed to the user (UI prevents this state).
             return JsonResponse({"error": unicode(err)}, 400)
 
-        return JsonResponse(_get_course_cohort_settings_representation(cohort_settings))
+    return JsonResponse(_get_course_cohort_settings_representation(course, cohort_settings))
 
 
 @require_http_methods(("GET", "PUT", "POST", "PATCH"))
@@ -367,34 +415,31 @@ def debug_cohort_mgmt(request, course_key_string):
     return render_to_response('/course_groups/debug.html', context)
 
 
-@require_http_methods(("GET", "POST"))
 @expect_json
 @login_required
 def cohort_discussion_topics(request, course_key_string):
+    """
+    The handler for cohort discussion categories requests.
+    This will raise 404 if user is not staff.
+
+    Returns the JSON representation of discussion topics w.r.t categories for the course.
+    """
+
     course_key = SlashSeparatedCourseKey.from_deprecated_string(course_key_string)
-    try:
-        course = get_course_by_id(course_key)
-    except Http404:
-        # course didn't exist, or requesting user does not have access to it.
-        return JsonError(status=404)
+    course = get_course_with_access(request.user, 'staff', course_key)
 
-    discussions_category = get_discussion_category_map(course)
-    cohorted_discussions = []
-    if request.method == 'POST':
-        cohort_settings_obj = cohorts.get_course_cohort_settings(course_key)
-        coursewide_discussions = discussions_category['entries']
+    discussions_category = get_discussion_category_map(course, cohort_inline_discussion=True)
+    discussions_category['course_wide_categories'] = discussions_category.pop('entries')
 
-        if 'coursewide_discussions' in request.json.keys() and request.json.get('coursewide_discussions'):
-            cohorted_coursewide_ids = [topic.get('id') for topic in request.json.get('entries') if topic['is_cohorted']]
-            coursewide_ids = [topic.get('id') for topic_name, topic in coursewide_discussions.iteritems()]
-            cohorted_discussions = [discussion_id for discussion_id in cohort_settings_obj.cohorted_discussions if
-                                    discussion_id not in coursewide_ids]
+    course_wide_children = []
+    inline_children = []
+    for name in discussions_category['children']:
+        if name in discussions_category['course_wide_categories']:
+            course_wide_children.append(name)
+        else:
+            inline_children.append(name)
 
-            cohorted_discussions.extend(cohorted_coursewide_ids)
-        elif request.json.get('inline_discussions') in request.json.keys() and request.json.get('inline_discussions'):
-            cohorted_discussions = []
-
-        cohort_settings_obj.cohorted_discussions = cohorted_discussions
-        cohort_settings_obj.save()
+    discussions_category['course_wide_children'] = course_wide_children
+    discussions_category['children'] = inline_children
 
     return JsonResponse(discussions_category)
