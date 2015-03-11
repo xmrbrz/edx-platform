@@ -1,13 +1,13 @@
-.. _edX Platform API Endpoints:
+.. _edX PlatformMobile  API Endpoints:
 
 ################################################
-edX LMS Platform Endpoints
+edX Platform Mobile API Endpoints
 ################################################
 
-The edX Platform API allows you to view information about users and their course enrollments, course information, and videos and transcripts.
+The edX Platform Mobile API enables you to view information about users and
+their course enrollments, course information, and videos and transcripts.
 
 The following tasks and endpoints are currently supported. 
-
 
 .. list-table::
    :widths: 10 70
