@@ -2,33 +2,39 @@
 
 <%namespace name='static' file='static_content.html'/>
 <h2 class="problem-header">
-  ${ problem['name'] }
+    ${ problem['name'] }
 </h2>
 
 <div class="problem-progress"></div>
 
-<div class="problem" aria-live="polite" aria-relevant="all">
-  ${ problem['html'] }
-
-  <div class="action">
-    <input type="hidden" name="problem_id" value="${ problem['name'] }" />
-
-    % if check_button:
-    <button class="check ${ check_button }" data-checking="${ check_button_checking }" data-value="${ check_button }"><span class="check-label">${ check_button }</span><span class="sr"> ${_("your answer")}</span></button>
-    % endif
-    % if reset_button:
-    <button class="reset" data-value="${_('Reset')}">${_('Reset')}<span class="sr"> ${_("your answer")}</span></button>
-    % endif
-    % if save_button:
-    <button class="save" data-value="${_('Save')}">${_('Save')}<span class="sr"> ${_("your answer")}</span></button>
-    % endif
-    % if answer_available:
-    <button class="show"><span class="show-label">${_('Show Answer')}</span> <span class="sr">${_("Reveal Answer")}</span></button>
-    % endif
-    % if attempts_allowed :
-    <div class="submission_feedback">
-      ${_("You have used {num_used} of {num_total} submissions").format(num_used=attempts_used, num_total=attempts_allowed)}
+<div class="problem">
+    <div aria-live="polite">
+        ${ problem['html'] }
     </div>
-    % endif
-  </div>
+    <div class="action">
+        <input type="hidden" name="problem_id" value="${ problem['name'] }"/>
+
+        % if check_button:
+        <button class="check ${ check_button }" data-checking="${ check_button_checking }"
+                data-value="${ check_button }"><span class="check-label">${ check_button }</span><span class="sr"> ${_("your answer")}</span>
+        </button>
+        % endif
+        % if reset_button:
+        <button class="reset" data-value="${_('Reset')}">${_('Reset')}<span class="sr"> ${_("your answer")}</span>
+        </button>
+        % endif
+        % if save_button:
+        <button class="save" data-value="${_('Save')}">${_('Save')}<span class="sr"> ${_("your answer")}</span></button>
+        % endif
+        % if answer_available:
+        <button class="show"><span class="show-label">${_('Show Answer')}</span> <span
+                class="sr">${_("Reveal Answer")}</span></button>
+        % endif
+        % if attempts_allowed :
+        <div class="submission_feedback">
+            ${_("You have used {num_used} of {num_total} submissions").format(num_used=attempts_used,
+            num_total=attempts_allowed)}
+        </div>
+        % endif
+    </div>
 </div>
