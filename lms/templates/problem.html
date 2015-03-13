@@ -31,7 +31,7 @@
                 class="sr">${_("Reveal Answer")}</span></button>
         % endif
         % if attempts_allowed :
-        <div class="submission_feedback">
+        <div class="submission_feedback" aria-live="polite">
             ${_("You have used {num_used} of {num_total} submissions").format(num_used=attempts_used,
             num_total=attempts_allowed)}
         </div>
