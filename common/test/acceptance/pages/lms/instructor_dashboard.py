@@ -498,10 +498,7 @@ class CohortManagementSection(PageObject):
         Returns the status of inline discussion topics, enabled or disabled.
         """
         inline_topics = self.q(css=self._bounded_selector('.check-discussion-subcategory-inline'))
-        disabled = all(topic.get_attribute('disabled') == 'true' for topic in inline_topics)
-        if disabled == 'false':
-            return False
-        return True
+        return all(topic.get_attribute('disabled') == 'true' for topic in inline_topics)
 
     def is_save_button_disabled(self, key):
         """
