@@ -42,5 +42,8 @@ def client_patch(self, path, data={}, content_type=MULTIPART_CONTENT, follow=Fal
     return response
 
 
-setattr(RequestFactory, 'patch', request_factory_patch)
-setattr(Client, 'patch', client_patch)
+if not hasattr(RequestFactory, 'patch'):
+    setattr(RequestFactory, 'patch', request_factory_patch)
+
+if not hasattr(Client, 'patch'):
+    setattr(Client, 'patch', client_patch)

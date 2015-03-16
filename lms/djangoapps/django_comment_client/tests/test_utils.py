@@ -178,12 +178,12 @@ class CategoryMapTestCase(ModuleStoreTestCase):
             **kwargs
         )
 
-    def assert_category_map_equals(self, expected, ignore_always_cohort_inline_discussions=False):
+    def assert_category_map_equals(self, expected, cohorted_if_in_list=False):
         """
         Asserts the expected map with the map returned by get_discussion_category_map method.
         """
         self.assertEqual(
-            utils.get_discussion_category_map(self.course, ignore_always_cohort_inline_discussions),
+            utils.get_discussion_category_map(self.course, cohorted_if_in_list),
             expected
         )
 
@@ -314,7 +314,7 @@ class CategoryMapTestCase(ModuleStoreTestCase):
                 },
                 "children": ["Chapter"]
             },
-            ignore_always_cohort_inline_discussions=True
+            cohorted_if_in_list=True
         )
 
     def test_tree(self):

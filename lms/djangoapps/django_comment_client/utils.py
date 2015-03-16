@@ -134,7 +134,47 @@ def _sort_map_entries(category_map, sort_alpha):
     category_map["children"] = [x[0] for x in sorted(things, key=lambda x: x[1]["sort_key"])]
 
 
-def get_discussion_category_map(course, ignore_always_cohort_inline_discussions=False):
+def get_discussion_category_map(course, cohorted_if_in_list=False):
+    """
+    Returns the category map for course-wide and inline discussions.
+
+    Args:
+        course : course object.
+        cohorted_if_in_list (bool): Specify that inline topic marked is_cohorted, if it's in discussion_topics list.
+
+    Example:
+        >>> example = {
+        >>>               "entries": {
+        >>>                   "General": {
+        >>>                       "sort_key": "General",
+        >>>                       "is_cohorted": True,
+        >>>                       "id": "i4x-edx-eiorguegnru-course-foobarbaz"
+        >>>                   }
+        >>>               },
+        >>>               "children": ["General", "Getting Started"],
+        >>>               "subcategories": {
+        >>>                   "Getting Started": {
+        >>>                       "subcategories": {},
+        >>>                       "children": [
+        >>>                           "Working with Videos",
+        >>>                           "Videos on edX"
+        >>>                       ],
+        >>>                       "entries": {
+        >>>                           "Working with Videos": {
+        >>>                               "sort_key": None,
+        >>>                               "is_cohorted": False,
+        >>>                               "id": "d9f970a42067413cbb633f81cfb12604"
+        >>>                           },
+        >>>                           "Videos on edX": {
+        >>>                               "sort_key": None,
+        >>>                               "is_cohorted": False,
+        >>>                               "id": "98d8feb5971041a085512ae22b398613"
+        >>>                           }
+        >>>                       }
+        >>>                   }
+        >>>               }
+        >>>          }
+    """
     unexpanded_category_map = defaultdict(list)
 
     modules = _get_discussion_modules(course)
@@ -146,7 +186,7 @@ def get_discussion_category_map(course, ignore_always_cohort_inline_discussions=
         title = module.discussion_target
         sort_key = module.sort_key
         category = " / ".join([x.strip() for x in module.discussion_category.split("/")])
-        #Handle case where module.start is None
+        # Handle case where module.start is None
         entry_start_date = module.start if module.start else datetime.max.replace(tzinfo=pytz.UTC)
         unexpanded_category_map[category].append({"title": title, "id": id, "sort_key": sort_key, "start_date": entry_start_date})
 
@@ -182,7 +222,7 @@ def get_discussion_category_map(course, ignore_always_cohort_inline_discussions=
             if node[level]["start_date"] > category_start_date:
                 node[level]["start_date"] = category_start_date
 
-        always_cohort_inline_discussions = (not ignore_always_cohort_inline_discussions and
+        always_cohort_inline_discussions = (not cohorted_if_in_list and
                                             course_cohort_settings.always_cohort_inline_discussions)
         for entry in entries:
             is_entry_cohorted = (
