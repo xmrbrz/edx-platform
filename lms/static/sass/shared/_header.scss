@@ -19,6 +19,15 @@ header.global {
     min-width: 760px;
   }
 
+  .wrapper-header {
+    @include clearfix();
+    height: 40px;
+    margin: 0 auto;
+    padding: 18px ($baseline/2) 0;
+    max-width: grid-width(12);
+    width: 100%;
+  }
+
   h1.logo {
     @include float(left);
     @include margin(-2px, 39px, 0, 0);
@@ -349,18 +358,22 @@ header.global-new {
   box-shadow: 0 1px 5px 0 $shadow-l1;
   background: $header-bg;
 
-  nav {
+  .wrapper-header {
     @include clearfix();
     @include box-sizing(border-box);
-    width: grid-width(12);
     height: 74px;
     margin: 0 auto;
     padding: 17px 0;
+    min-width: 880px;
+
+    &.rwd {
+      min-width: 0px;
+    }
   }
 
   h1.logo {
     @include float(left);
-    margin: -2px 39px 0 10px;
+    margin: -2px 39px 0px 39px;
     position: relative;
 
     a {
@@ -370,6 +383,10 @@ header.global-new {
 
   .nav-global {
     @include float(left);
+  }
+
+  .nav-account-management {
+    margin: 0 auto;
   }
 
   .guest {
@@ -657,14 +674,14 @@ header.global-new {
   }
 
   &.rwd {
-    nav {
+    .wrapper-header {
       max-width: 1180px;
       width: 320px;
     }
 
     .mobile-menu-button {
+      @include float(left);
       display: inline;
-      float: left;
       text-decoration: none;
       color: $m-gray;
       font-size: 18px;
@@ -678,11 +695,6 @@ header.global-new {
     }
 
     .logo {
-      position: absolute;
-      width: 54px;
-      left: calc( 50% - 90px );
-      top: 20px;
-
       img {
         width: 54px;
       }
@@ -746,8 +758,9 @@ header.global-new {
     }
 
     @include media( $desktop ) {
-      nav {
+      .wrapper-header {
         width: 100%;
+        min-width: 800px;
       }
 
       .mobile-menu-button {
@@ -755,12 +768,6 @@ header.global-new {
       }
 
       .logo {
-        position: relative;
-        width: auto;
-        top: inherit;
-        left: inherit;
-        margin-left: ($baseline/2);
-
         img {
           width: auto;
         }
@@ -809,7 +816,7 @@ header.global-new {
     }
 
     @include media( $xl-desktop ) {
-      nav {
+      .wrapper-header {
         padding: 17px 10px;
       }
 
@@ -822,6 +829,7 @@ header.global-new {
 
       .logo {
         margin-left: 0;
+        margin-right: 0;
       }
     }
   }
