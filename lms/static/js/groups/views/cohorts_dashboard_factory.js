@@ -24,7 +24,6 @@
                     context: {
                         discussionTopicsModel: discussionTopics,
                         uploadCohortsCsvUrl: cohortManagementElement.data('upload_cohorts_csv_url'),
-                        studioAdvancedSettingsUrl: cohortManagementElement.data('advanced-settings-url'),
                         studioGroupConfigurationsUrl: studioGroupConfigurationsUrl
                     }
                 });

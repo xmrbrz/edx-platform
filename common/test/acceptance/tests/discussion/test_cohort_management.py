@@ -690,7 +690,7 @@ class CohortDiscussionTopicsTest(UniqueCourseTest, CohortTestMixin):
         """
         Assert that discussion topics are visible with appropriate content.
         """
-        self.cohort_management_page.toggle_discussion_topics()
+        self.cohort_management_page.toggles_showing_of_discussion_topics()
         self.assertTrue(self.cohort_management_page.discussion_topics_visible())
 
         self.assertEqual(

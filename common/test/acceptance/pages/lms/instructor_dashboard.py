@@ -456,7 +456,7 @@ class CohortManagementSection(PageObject):
         if state != self.is_cohorted:
             self.q(css=self._bounded_selector('.cohorts-state')).first.click()
 
-    def toggle_discussion_topics(self):
+    def toggles_showing_of_discussion_topics(self):
         """
         Shows the discussion topics.
         """
@@ -506,10 +506,7 @@ class CohortManagementSection(PageObject):
         """
         save_button_css = '%s %s' % (self.discussion_form_selectors[key], '.action-save')
         disabled = self.q(css=self._bounded_selector(save_button_css)).attrs('disabled')
-        if disabled[0] == 'true':
-            return True
-
-        return False
+        return disabled[0] == 'true'
 
     def is_category_selected(self):
         """
