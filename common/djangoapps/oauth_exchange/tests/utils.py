@@ -3,7 +3,8 @@ Test utilities for OAuth access token exchange
 """
 import provider.constants
 from social.apps.django_app.default.models import UserSocialAuth
-from util.test_third_party_auth_util import ThirdPartyOAuthTestMixin
+
+from third_party_auth.tests.utils import ThirdPartyOAuthTestMixin
 
 
 class AccessTokenExchangeTestMixin(ThirdPartyOAuthTestMixin):
@@ -67,6 +68,12 @@ class AccessTokenExchangeTestMixin(ThirdPartyOAuthTestMixin):
             "invalid_client",
             "test_client_id is not a public client"
         )
+
+    def test_inactive_user(self):
+        self.user.is_active = False
+        self.user.save()
+        self._setup_provider_response(success=True)
+        self._assert_success(self.data, expected_scopes=[])
 
     def test_invalid_acess_token(self):
         self._setup_provider_response(success=False)

@@ -14,8 +14,8 @@ import provider.constants
 from provider import scope
 from provider.oauth2.models import AccessToken
 
-from util.test_third_party_auth_util import ThirdPartyOAuthTestMixinFacebook, ThirdPartyOAuthTestMixinGoogle
 from oauth_exchange.tests.utils import AccessTokenExchangeTestMixin
+from third_party_auth.tests.utils import ThirdPartyOAuthTestMixinFacebook, ThirdPartyOAuthTestMixinGoogle
 
 
 class AccessTokenExchangeViewTest(AccessTokenExchangeTestMixin):

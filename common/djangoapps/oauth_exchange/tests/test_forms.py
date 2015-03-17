@@ -11,9 +11,9 @@ import httpretty
 from provider import scope
 import social.apps.django_app.utils as social_utils
 
-from util.test_third_party_auth_util import ThirdPartyOAuthTestMixinFacebook, ThirdPartyOAuthTestMixinGoogle
 from oauth_exchange.forms import AccessTokenExchangeForm
 from oauth_exchange.tests.utils import AccessTokenExchangeTestMixin
+from third_party_auth.tests.utils import ThirdPartyOAuthTestMixinFacebook, ThirdPartyOAuthTestMixinGoogle
 
 
 class AccessTokenExchangeFormTest(AccessTokenExchangeTestMixin):

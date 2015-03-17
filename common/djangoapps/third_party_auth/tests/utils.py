@@ -1,11 +1,13 @@
 """Common utility for testing third party oauth2 features."""
 import json
+
 import httpretty
 
 from provider.constants import PUBLIC
 from provider.oauth2.models import Client
-from student.tests.factories import UserFactory
 from social.apps.django_app.default.models import UserSocialAuth
+
+from student.tests.factories import UserFactory
 
 
 @httpretty.activate
@@ -55,7 +57,7 @@ class ThirdPartyOAuthTestMixin(object):
 
 
 class ThirdPartyOAuthTestMixinFacebook(object):
-    """Tests access token exchange with the Facebook backend"""
+    """Tests oauth with the Facebook backend"""
     BACKEND = "facebook"
     USER_URL = "https://graph.facebook.com/me"
     # In facebook responses, the "id" field is used as the user's identifier
@@ -63,7 +65,7 @@ class ThirdPartyOAuthTestMixinFacebook(object):
 
 
 class ThirdPartyOAuthTestMixinGoogle(object):
-    """Tests access token exchange with the Google backend"""
+    """Tests oauth with the Google backend"""
     BACKEND = "google-oauth2"
     USER_URL = "https://www.googleapis.com/oauth2/v1/userinfo"
     # In google-oauth2 responses, the "email" field is used as the user's identifier
