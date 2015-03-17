@@ -10,8 +10,11 @@ from courseware.module_render import get_module_for_descriptor
 from util.module_utils import get_dynamic_descriptor_children
 
 from edxval.api import (
-    get_video_info_for_course_and_profile, ValInternalError
+    get_video_info_for_course_and_profiles, ValInternalError
 )
+
+# Video profiles in priority order
+VIDEO_PROFILES = ["mobile_low", "mobile_high", "youtube"]
 
 
 class BlockOutline(object):
@@ -26,8 +29,8 @@ class BlockOutline(object):
         self.request = request  # needed for making full URLS
         self.local_cache = {}
         try:
-            self.local_cache['course_videos'] = get_video_info_for_course_and_profile(
-                unicode(course_id), "mobile_low"
+            self.local_cache['course_videos'] = get_video_info_for_course_and_profiles(
+                unicode(course_id), VIDEO_PROFILES
             )
         except ValInternalError:  # pragma: nocover
             self.local_cache['course_videos'] = {}
@@ -163,19 +166,32 @@ def video_summary(course, course_id, video_descriptor, request, local_cache):
     """
     returns summary dict for the given video module
     """
-    # First try to check VAL for the URLs we want.
-    val_video_info = local_cache['course_videos'].get(video_descriptor.edx_video_id, {})
-    if val_video_info:
-        video_url = val_video_info['url']
+    # Get encoded videos
+    encoded_videos = local_cache['course_videos'].get(video_descriptor.edx_video_id, {})
+
+    # Get the default video for backwards compatibility
+    val_profile = None
+    if encoded_videos:
+        for profile in VIDEO_PROFILES:
+            if encoded_videos.get(profile):
+                val_profile = encoded_videos.get(profile)
+                break
+
+    if val_profile:
+        video_url = val_profile['url']
     # Then fall back to VideoDescriptor fields for video URLs
     elif video_descriptor.html5_sources:
         video_url = video_descriptor.html5_sources[0]
     else:
         video_url = video_descriptor.source
 
-    # If we have the video information from VAL, we also have duration and size.
-    duration = val_video_info.get('duration', None)
-    size = val_video_info.get('file_size', 0)
+    # Get duration/size, else default
+    if val_profile:
+        duration = val_profile.get('duration')
+        size = val_profile.get('file_size')
+    else:
+        duration = None
+        size = 0
 
     # Transcripts...
     transcript_langs = video_descriptor.available_translations(verify_assets=False)
@@ -193,6 +209,14 @@ def video_summary(course, course_id, video_descriptor, request, local_cache):
         for lang in transcript_langs
     }
 
+    # Filter relevant information in encoded videos
+    for profile, video_info in encoded_videos.iteritems():
+        encoded_videos[profile] = {
+            key: value
+            for key, value in video_info.iteritems()
+            if key in ["url", "file_size"]
+        }
+
     return {
         "video_url": video_url,
         "video_thumbnail_url": None,
@@ -203,4 +227,5 @@ def video_summary(course, course_id, video_descriptor, request, local_cache):
         "language": video_descriptor.get_default_transcript_language(),
         "category": video_descriptor.category,
         "id": unicode(video_descriptor.scope_ids.usage_id),
+        "encoded_videos": encoded_videos
     }
