@@ -53,7 +53,7 @@ site_status_msg = get_site_status_msg(course_id)
     % if user.is_authenticated():
       % if not course or disable_courseware_header:
     <nav aria-label="Main" class="nav-main">
-      <div class="left nav-global authenticated">
+      <ul class="left nav-global authenticated">
         <%block name="navigation_global_links_authenticated">
             <li class="nav-global-01">
               <a href="${marketing_link('HOW_IT_WORKS')}">${_("How it Works")}</a>
@@ -65,11 +65,11 @@ site_status_msg = get_site_status_msg(course_id)
               <a href="${marketing_link('SCHOOLS')}">${_("Schools & Partners")}</a>
             </li>
         </%block>
-      </div>
+      </ul>
     </nav>
       % endif
 
-    <ol class="user">
+    <ul class="user">
       <li class="primary">
         <a href="${reverse('dashboard')}" class="user-link">
           <i class="icon fa fa-home" aria-hidden="true"></i>
@@ -88,21 +88,21 @@ site_status_msg = get_site_status_msg(course_id)
           <li><a href="${reverse('logout')}" role="menuitem">${_("Sign out")}</a></li>
         </ul>
       </li>
-    </ol>
+    </ul>
 
       % if should_display_shopping_cart_func(): # see shoppingcart.context_processor.user_has_cart_context_processor
-    <ol class="user">
+    <ul class="user">
       <li class="primary">
         <a class="shopping-cart" href="${reverse('shoppingcart.views.show_cart')}">
-          <i class="icon fa fa-shopping-cart"></i> ${_("Shopping Cart")}
+          <i class="icon fa fa-shopping-cart" aria-hidden="true"></i> ${_("Shopping Cart")}
         </a>
       </li>
-    </ol>
+    </ul>
       % endif
 
     % else:
     <nav aria-label="Main" class="nav-main">
-      <ol class="left nav-global">
+      <ul class="left nav-global">
         <%block name="navigation_global_links">
             <li class="nav-global-01">
               <a href="${marketing_link('HOW_IT_WORKS')}">${_("How it Works")}</a>
@@ -114,10 +114,10 @@ site_status_msg = get_site_status_msg(course_id)
               <a href="${marketing_link('SCHOOLS')}">${_("Schools & Partners")}</a>
             </li>
         </%block>
-      </ol>
+      </ul>
     </nav>
 
-    <nav aria-label="Account Management" class="nav-account-management">
+    <nav aria-label="Account" class="nav-account-management">
       <div class="right nav-courseware">
         % if not settings.FEATURES['DISABLE_LOGIN_BUTTON']:
           % if course and settings.FEATURES.get('RESTRICT_ENROLL_BY_REG_METHOD') and course.enrollment_domain:
