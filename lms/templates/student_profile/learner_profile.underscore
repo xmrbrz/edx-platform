@@ -1,19 +1,23 @@
-<% if (profileData['show_visibility_section']) { %>
+<%
+    var profileVisibility = profileVisibility == 'all_users';
+%>
+
+<% if (info['show_visibility_select_section']) { %>
     <div class="profile-visibility">
         <label class="profile-visibility-title">
             <%- gettext('edX learners can see my:') %>
         </label>
         <span class="profile-visibility-value">
-            <select name="select">
-                <option value="lp" <%- !profileData['profile_visibility'] ? 'selected' : '' %> ><%- gettext('Limited Profile') %></option>
-                <option value="fp" <%- profileData['profile_visibility'] ? 'selected' : '' %> ><%- gettext('Full Profile') %></option>
+            <select name="select" class="profile-visibility-select">
+                <option value="private" <%- !profileVisibility ? 'selected' : '' %> ><%- gettext('Limited Profile') %></option>
+                <option value="all_users" <%- profileVisibility ? 'selected' : '' %> ><%- gettext('Full Profile') %></option>
             </select>
         </span>
 
-        <% if (profileData['show_limited_profile_message']) { %>
+        <% if (showBirthYearMessage) { %>
             <div class="profile-visibility-message">
                 <%- gettext('Your profile is set to limited because you have not set your birth year yet.') %>
-                <a class="link-to-account-settings" href="<%- profileData['accountSettingsPageUrl'] %>"><%- gettext('Account Settings page') %></a>
+                <a class="link-to-account-settings" href="<%- accountSettingsPageUrl %>"><%- gettext('Account Settings page') %></a>
             </div>
         <% } %>
 
@@ -22,47 +26,39 @@
 
 <div class="profile-data">
 
-        <span class="profile-data-userimage">
+        <div class="profile-data-userimage">
             <img src="http://www.teachthought.com/wp-content/uploads/2012/07/edX-120x120.jpg">
-        </span>
+        </div>
 
-        <span class="profile-data-userinfo">
+        <div class="profile-data-userinfo">
 
             <label class="profile-data-info-title">
-                <%- gettext(profileData['username']) %>
+                <%- gettext(username) %>
             </label>
 
-            <% if (profileData['profile_visibility']) { %>
+            <% if (profileVisibility) { %>
                 <div class="profile-data-userinfo-country">
-                    <i class="icon fa fa-map-marker"></i>
-                    <select name="select">
-                        <% _.each(profileData['country_options'], function(countryOption) { %>
-                            <option value="<%- countryOption[0] %>"><%- countryOption[1] %></option>
-                        <% }); %>
-                    </select>
+                    <i class="icon fa fa-map-marker fa-fw"></i>
+
                 </div>
 
                 <div class="profile-data-userinfo-language">
-                    <i class="icon fa fa-comment"></i>
-                    <select name="select">
-                        <% _.each(profileData['language_options'], function(languageOption) { %>
-                            <option value="<%- languageOption[0] %>"><%- languageOption[1] %></option>
-                        <% }); %>
-                    </select>
+                    <i class="icon fa fa-comment fa-flip-horizontal fa-fw"></i>
+
                 </div>
             <% } %>
 
-        </span>
+        </div>
 
         <div class="profile-data-useraboutme">
 
-            <% if (profileData['profile_visibility']) { %>
+            <% if (profileVisibility) { %>
                 <label class="profile-data-aboutme-title">
                     About me
                 </label>
 
                 <div class="profile-data-aboutme-detail">
-                    <textarea><%- gettext(profileData['bio']) %></textarea>
+                    <textarea><%- gettext(info['bio']) %></textarea>
                 </div>
             <% } else { // limited profile %>
                 <label class="profile-data-useraboutme-limited-message">

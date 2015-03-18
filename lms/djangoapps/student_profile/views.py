@@ -13,6 +13,9 @@ from dark_lang.models import DarkLangConfig
 from edxmako.shortcuts import render_to_response, render_to_string
 
 from student.models import UserProfile
+import openedx.core.djangoapps.user_api.preferences.api as perf_api
+import openedx.core.djangoapps.user_api.preferences.api as account_api
+
 
 
 @login_required
@@ -46,19 +49,16 @@ def learner_profile(request, username):
         )
     ]
 
+    # import pdb; pdb.set_trace()
+    # get_user_preferences(request.user, username=username)
     context = {
-        # TODO! Replace with profile API url once available
-        'profile_api_url': reverse("accounts_api", kwargs={'username': request.user.username}),
-        'account_settings_page_url': 'path/to/account/settings',
-        # TODO! Remove/Update (keys,values) once profile API url is available
-        'profile_data': {
-            'show_visibility_section': request.user.username == username,
-            'show_limited_profile_message': True,
-            'profile_visibility': True,           # True: Full Profile, False: Limited Profile
-            'username': request.user.username,
+        'accounts_api_url': reverse("accounts_api", kwargs={'username': username}),
+        'preferences_api_url': reverse('preferences_api', kwargs={'username': username}),
+        'account_settings_page_url': reverse('account_settings'),
+        'info': {
+            'show_visibility_select_section': request.user.username == username,
             'country_options': country_options,
-            'language_options': language_options,
-            'bio': "Let's not get into details :)"
+            'language_options': language_options
         }
     }
     return render_to_response('student_profile/learner_profile.html', context)

@@ -5,6 +5,8 @@ import json
 from ipware.ip import get_ip
 from pytz import common_timezones
 
+
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import (

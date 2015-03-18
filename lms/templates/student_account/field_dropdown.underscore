@@ -1,6 +1,9 @@
-<label class="account-settings-field-title">
-    <%- gettext(title) %>
-</label>
+<% if (showElement) { %>
+    <label class="account-settings-field-title">
+        <%- gettext(title) %>
+    </label>
+<% } %>
+
 <span class="account-settings-field-value">
     <select name="select">
         <% if (!required) { %>
@@ -11,7 +14,12 @@
         <% }); %>
     </select>
 </span>
+
+<% if (showElement) { %>
+
 <span class="account-settings-field-message">
     <%- gettext(message) %>
 </span>
+
 <hr class="divider">
+<% } %>

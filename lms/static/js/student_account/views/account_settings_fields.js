@@ -195,7 +195,7 @@
             templateSelector: '#field_dropdown-tpl',
 
             events: {
-                'change select': 'saveValue',
+                'change select': 'saveValue'
             },
 
             initialize: function (options) {
@@ -209,7 +209,8 @@
                     title: this.options.title,
                     required: this.options.required,
                     selectOptions: this.options.options,
-                    message: this.helpMessage
+                    message: this.helpMessage,
+                    showElement: _.isUndefined(this.options.showElement) ? true : this.options.showElement
                 }));
                 this.updateValueInField();
                 return this;
@@ -228,6 +229,46 @@
                 attributes[this.options.valueAttribute] = this.fieldValue();
                 this.saveAttributes(attributes);
 
+            }
+        });
+
+        AccountSettingsFieldViews.TextareaFieldView = AccountSettingsFieldViews.FieldView.extend({
+
+            templateSelector: '#field_textarea-tpl',
+
+            events: {
+                'change textarea': 'saveValue'
+            },
+
+            initialize: function (options) {
+                this._super(options);
+                _.bindAll(this, 'render', 'fieldValue', 'updateValueInField', 'saveValue');
+                this.listenTo(this.model, "change:" + this.options.valueAttribute, this.updateValueInField);
+            },
+
+            render: function () {
+                this.$el.html(this.template({
+                    title: this.options.title,
+                    selectOptions: this.options.options,
+                    message: this.helpMessage,
+                    showElement: _.isUndefined(this.options.showElement) ? true : this.options.showElement
+                }));
+                this.updateValueInField();
+                return this;
+            },
+
+            fieldValue: function () {
+                return this.$('.account-settings-field-value textarea').val();
+            },
+
+            updateValueInField: function () {
+                this.$('.account-settings-field-value textarea').val(this.modelValue() || "");
+            },
+
+            saveValue: function () {
+                var attributes = {};
+                attributes[this.options.valueAttribute] = this.fieldValue();
+                this.saveAttributes(attributes);
             }
         });
 

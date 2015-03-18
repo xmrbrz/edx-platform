@@ -15,10 +15,14 @@
             <%static:include path="student_profile/${template_name}.underscore" />
         </script>
     % endfor
+    <script type="text/template" id="field_dropdown-tpl">
+        <%static:include path="student_account/field_dropdown.underscore" />
+    </script>
 </%block>
 
 <div class="learner-profile-container"
-     data-profile-api-url="${profile_api_url}"
+     data-accounts-api-url="${accounts_api_url}"
+     data-preferences-api-url="${preferences_api_url}"
      data-account-settings-page-url="${account_settings_page_url}">
 </div>
 
@@ -28,8 +32,8 @@
     <script>
           (function (require) {
             require(['js/student_profile/views/learner_profile_factory'], function(setupLearnerProfile) {
-                var profileData = ${ json.dumps(profile_data) };
-                setupLearnerProfile(profileData);
+                var info = ${ json.dumps(info) };
+                setupLearnerProfile(info);
             });
           }).call(this, require || RequireJS.require);
     </script>
