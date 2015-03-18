@@ -1,15 +1,12 @@
 """
-Test cases for the upload and remove endpoints of the profile image api.
+Test cases for the HTTP endpoints of the profile image api.
 """
 
-import os
-from tempfile import NamedTemporaryFile
 import unittest
 
 import ddt
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.test.utils import override_settings
 import mock
 from PIL import Image
 from rest_framework.test import APITestCase, APIClient
@@ -18,7 +15,8 @@ from student.tests.factories import UserFactory
 
 from ...user_api.accounts.api import set_has_profile_image, get_profile_image_names
 from ...user_api.accounts.helpers import get_profile_image_storage
-from ..images import DevMsg, generate_profile_images
+from ..images import generate_profile_images, ImageValidationError
+from .helpers import make_image_file
 
 TEST_PASSWORD = "test"
 
@@ -46,30 +44,6 @@ class ProfileImageEndpointTestCase(APITestCase):
     def tearDown(self):
         for name in get_profile_image_names(self.user.username).values():
             self.storage.delete(name)
-
-    def _make_image_file(self, dimensions=(320, 240), extension=".jpeg", force_size=None):
-        """
-        Returns a named temporary file created with the specified image type and options.
-
-        Note the default dimensions are unequal (not a square) to ensure the center-square
-        cropping logic will be exercised.
-        """
-        image = Image.new('RGB', dimensions, "green")
-        image_file = NamedTemporaryFile(suffix=extension)
-        image.save(image_file)
-        if force_size is not None:
-            image_file.seek(0, os.SEEK_END)
-            bytes_to_pad = force_size - image_file.tell()
-            # write in hunks of 256 bytes
-            hunk, byte_ = bytearray([0] * 256), bytearray([0])
-            num_hunks, remainder = divmod(bytes_to_pad, 256)
-            for _ in xrange(num_hunks):
-                image_file.write(hunk)
-            for _ in xrange(remainder):
-                image_file.write(byte_)
-            image_file.flush()
-        image_file.seek(0)
-        return image_file
 
     def check_images(self, exist=True):
         """
@@ -131,7 +105,7 @@ class ProfileImageUploadTestCase(ProfileImageEndpointTestCase):
         """
         Test that an authenticated user can POST to their own upload endpoint.
         """
-        response = self.client.post(self.url, {'file': self._make_image_file()}, format='multipart')
+        response = self.client.post(self.url, {'file': make_image_file()}, format='multipart')
         self.check_response(response, 200)
         self.check_images()
         self.check_has_profile_image()
@@ -143,7 +117,7 @@ class ProfileImageUploadTestCase(ProfileImageEndpointTestCase):
         different_user = UserFactory.create(password=TEST_PASSWORD)
         different_client = APIClient()
         different_client.login(username=different_user.username, password=TEST_PASSWORD)
-        response = different_client.post(self.url, {'file': self._make_image_file()}, format='multipart')
+        response = different_client.post(self.url, {'file': make_image_file()}, format='multipart')
         self.check_response(response, 404)
         self.check_images(False)
         self.check_has_profile_image(False)
@@ -155,7 +129,7 @@ class ProfileImageUploadTestCase(ProfileImageEndpointTestCase):
         staff_user = UserFactory(is_staff=True, password=TEST_PASSWORD)
         staff_client = APIClient()
         staff_client.login(username=staff_user.username, password=TEST_PASSWORD)
-        response = staff_client.post(self.url, {'file': self._make_image_file()}, format='multipart')
+        response = staff_client.post(self.url, {'file': make_image_file()}, format='multipart')
         self.check_response(response, 404)
         self.check_images(False)
         self.check_has_profile_image(False)
@@ -171,88 +145,27 @@ class ProfileImageUploadTestCase(ProfileImageEndpointTestCase):
 
     def test_upload_not_a_file(self):
         """
-        Test that sending unexpected data that isn't a file results in HTTP 400.
+        Test that sending unexpected data that isn't a file results in HTTP
+        400.
         """
         response = self.client.post(self.url, {'file': 'not a file'}, format='multipart')
         self.check_response(response, 400)
         self.check_images(False)
         self.check_has_profile_image(False)
 
-    @ddt.data((1024, False), (1025, True))
-    @ddt.unpack
-    @override_settings(PROFILE_IMAGE_MAX_BYTES=1024)
-    def test_upload_file_too_large(self, upload_size, should_fail):
+    def test_upload_validation(self):
         """
+        Test that when upload validation fails, the proper HTTP response and
+        message are returned.
         """
-        image_file = self._make_image_file(dimensions=(1, 1), extension=".png", force_size=upload_size)
-        response = self.client.post(self.url, {'file': image_file}, format='multipart')
-        if should_fail:
-            self.check_response(response, 400, DevMsg.FILE_TOO_LARGE)
-        else:
-            self.check_response(response, 200)
-        self.check_images(not should_fail)
-        self.check_has_profile_image(not should_fail)
-
-    @ddt.data((99, True), (100, False))
-    @ddt.unpack
-    @override_settings(PROFILE_IMAGE_MIN_BYTES=100)
-    def test_upload_file_too_small(self, upload_size, should_fail):
-        """
-        """
-        image_file = self._make_image_file(dimensions=(1, 1), extension=".png", force_size=upload_size)
-        response = self.client.post(self.url, {'file': image_file}, format='multipart')
-        if should_fail:
-            self.check_response(response, 400, DevMsg.FILE_TOO_SMALL)
-        else:
-            self.check_response(response, 200)
-        self.check_images(not should_fail)
-        self.check_has_profile_image(not should_fail)
-
-    def test_upload_bad_extension(self):
-        """
-        """
-        response = self.client.post(self.url, {'file': self._make_image_file(extension=".bmp")}, format='multipart')
-        self.check_response(response, 400, DevMsg.FILE_BAD_TYPE)
-        self.check_images(False)
-        self.check_has_profile_image(False)
-
-    # ext / header mismatch
-    def test_upload_wrong_extension(self):
-        """
-        """
-        # make a bmp, rename it to jpeg
-        bmp_file = self._make_image_file(extension=".bmp")
-        fake_jpeg_file = NamedTemporaryFile(suffix=".jpeg")
-        fake_jpeg_file.write(bmp_file.read())
-        fake_jpeg_file.seek(0)
-        response = self.client.post(self.url, {'file': fake_jpeg_file}, format='multipart')
-        self.check_response(response, 400, DevMsg.FILE_BAD_EXT)
-        self.check_images(False)
-        self.check_has_profile_image(False)
-
-    # content-type / header mismatch
-    @mock.patch('django.test.client.mimetypes')
-    def test_upload_bad_content_type(self, mock_mimetypes):
-        """
-        """
-        mock_mimetypes.guess_type.return_value = ['image/gif']
-        response = self.client.post(self.url, {'file': self._make_image_file(extension=".jpeg")}, format='multipart')
-        self.check_response(response, 400, DevMsg.FILE_BAD_MIMETYPE)
-        self.check_images(False)
-        self.check_has_profile_image(False)
-
-    @ddt.data(
-        (1, 1), (10, 10), (100, 100), (1000, 1000),
-        (1, 10), (10, 100), (100, 1000), (1000, 999)
-    )
-    def test_resize(self, size):
-        """
-        use a variety of input image sizes to ensure that the output pictures
-        are all properly scaled
-        """
-        response = self.client.post(self.url, {'file': self._make_image_file(size)}, format='multipart')
-        self.check_response(response, 200)
-        self.check_images()
+        with mock.patch(
+            'openedx.core.djangoapps.profile_images.views.validate_uploaded_image',
+            side_effect=ImageValidationError("test error message")
+        ):
+            response = self.client.post(self.url, {'file': make_image_file()}, format='multipart')
+            self.check_response(response, 400, "test error message")
+            self.check_images(False)
+            self.check_has_profile_image(False)
 
 
 @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Profile Image API is only supported in LMS')
@@ -265,7 +178,7 @@ class ProfileImageRemoveTestCase(ProfileImageEndpointTestCase):
 
     def setUp(self):
         super(ProfileImageRemoveTestCase, self).setUp()
-        generate_profile_images(self._make_image_file(), get_profile_image_names(self.user.username))
+        generate_profile_images(make_image_file(), get_profile_image_names(self.user.username))
         self.check_images()
         set_has_profile_image(self.user.username, True)
 

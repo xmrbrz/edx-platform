@@ -44,7 +44,7 @@ class ProfileImageUploadView(APIView):
 
             # image file validation.
             try:
-                validate_uploaded_image(uploaded_file, uploaded_file.content_type)
+                validate_uploaded_image(uploaded_file)
             except ImageValidationError, exc:
                 return Response(
                     {

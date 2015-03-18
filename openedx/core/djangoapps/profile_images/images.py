@@ -28,7 +28,7 @@ class ImageValidationError(Exception):
     pass
 
 
-def validate_uploaded_image(image_file, content_type):
+def validate_uploaded_image(uploaded_file):
     """
     Raises ImageFileRejected if the server should refuse to use this
     uploaded file as the source image for a user's profile image.  Otherwise,
@@ -56,28 +56,28 @@ def validate_uploaded_image(image_file, content_type):
         }
     }
 
-    if image_file.size > settings.PROFILE_IMAGE_MAX_BYTES:
+    if uploaded_file.size > settings.PROFILE_IMAGE_MAX_BYTES:
         raise ImageValidationError(DevMsg.FILE_TOO_LARGE)
-    elif image_file.size < settings.PROFILE_IMAGE_MIN_BYTES:
+    elif uploaded_file.size < settings.PROFILE_IMAGE_MIN_BYTES:
         raise ImageValidationError(DevMsg.FILE_TOO_SMALL)
 
     # check the file extension looks acceptable
-    filename = str(image_file.name).lower()
+    filename = str(uploaded_file.name).lower()
     filetype = [ft for ft in image_types if any(filename.endswith(ext) for ext in image_types[ft]['extension'])]
     if not filetype:
         raise ImageValidationError(DevMsg.FILE_BAD_TYPE)
     filetype = filetype[0]
 
     # check mimetype matches expected file type
-    if content_type not in image_types[filetype]['mimetypes']:
+    if uploaded_file.content_type not in image_types[filetype]['mimetypes']:
         raise ImageValidationError(DevMsg.FILE_BAD_MIMETYPE)
 
     # check image file headers match expected file type
     headers = image_types[filetype]['magic']
-    if image_file.read(len(headers[0]) / 2).encode('hex') not in headers:
+    if uploaded_file.read(len(headers[0]) / 2).encode('hex') not in headers:
         raise ImageValidationError(DevMsg.FILE_BAD_EXT)
     # avoid unexpected errors from subsequent modules expecting the fp to be at 0
-    image_file.seek(0)
+    uploaded_file.seek(0)
 
 
 def _get_scaled_image_file(image_obj, size):
@@ -88,6 +88,8 @@ def _get_scaled_image_file(image_obj, size):
     Note that the file object returned is a django ContentFile which holds
     data in memory (not on disk).
     """
+    if image_obj.mode != "RGB":
+        image_obj = image_obj.convert("RGB")
     scaled = image_obj.resize((size, size), Image.ANTIALIAS)
     string_io = StringIO()
     scaled.save(string_io, format='JPEG')
