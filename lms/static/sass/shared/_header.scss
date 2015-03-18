@@ -364,16 +364,16 @@ header.global-new {
     height: 74px;
     margin: 0 auto;
     padding: 17px 0;
-    min-width: 880px;
+    max-width: 1180px;
 
-    &.rwd {
-      min-width: 0px;
+    &:not(.rwd) {
+      min-width: 880px;
     }
   }
 
   h1.logo {
     @include float(left);
-    margin: -2px 39px 0px 39px;
+    margin: -2px 39px 0 39px;
     position: relative;
 
     a {
