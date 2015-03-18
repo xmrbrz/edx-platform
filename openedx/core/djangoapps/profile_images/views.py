@@ -5,12 +5,15 @@ This module implements the upload and remove endpoints of the profile image api.
 from contextlib import closing
 
 from rest_framework import permissions, status
-from rest_framework.authentication import OAuth2Authentication, SessionAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from openedx.core.lib.api.permissions import IsUserInUrl
+from openedx.core.lib.api.authentication import (
+    OAuth2AuthenticationAllowInactiveUser,
+    SessionAuthenticationAllowInactiveUser,
+)
 from ..user_api.accounts.api import set_has_profile_image, get_profile_image_names
 from .images import validate_uploaded_image, generate_profile_images, remove_profile_images, ImageValidationError
 
@@ -23,7 +26,7 @@ class ProfileImageUploadView(APIView):
 
     parser_classes = (MultiPartParser, FormParser,)
 
-    authentication_classes = (OAuth2Authentication, SessionAuthentication)
+    authentication_classes = (OAuth2AuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser)
     permission_classes = (permissions.IsAuthenticated, IsUserInUrl)
 
     def post(self, request, username):
@@ -69,8 +72,8 @@ class ProfileImageRemoveView(APIView):
     Provides a POST endpoint to delete all profile image files for a given user
     """
 
-    authentication_classes = (OAuth2Authentication, SessionAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (OAuth2AuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser)
 
     def post(self, request, username):
         """

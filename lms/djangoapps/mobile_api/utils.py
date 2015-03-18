@@ -2,13 +2,12 @@
 Common utility methods and decorators for Mobile APIs.
 """
 
-
 import functools
 from rest_framework import permissions
-
-from util.authentication import SessionAuthenticationAllowInactiveUser, OAuth2AuthenticationAllowInactiveUser
 from opaque_keys.edx.keys import CourseKey
 from xmodule.modulestore.django import modulestore
+
+from openedx.core.lib.api.authentication import SessionAuthenticationAllowInactiveUser, OAuth2AuthenticationAllowInactiveUser
 from courseware.courses import get_course_with_access
 from openedx.core.lib.api.permissions import IsUserInUrl
 
