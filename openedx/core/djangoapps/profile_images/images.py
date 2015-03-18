@@ -21,7 +21,7 @@ class DevMsg(object):
     FILE_BAD_MIMETYPE = 'Content-Type header does not match data.'
 
 
-class ImageFileRejected(Exception):
+class ImageValidationError(Exception):
     """
     Exception to use when the system rejects a user-supplied source image.
     """
@@ -57,25 +57,25 @@ def validate_uploaded_image(image_file, content_type):
     }
 
     if image_file.size > settings.PROFILE_IMAGE_MAX_BYTES:
-        raise ImageFileRejected(DevMsg.FILE_TOO_LARGE)
+        raise ImageValidationError(DevMsg.FILE_TOO_LARGE)
     elif image_file.size < settings.PROFILE_IMAGE_MIN_BYTES:
-        raise ImageFileRejected(DevMsg.FILE_TOO_SMALL)
+        raise ImageValidationError(DevMsg.FILE_TOO_SMALL)
 
     # check the file extension looks acceptable
     filename = str(image_file.name).lower()
     filetype = [ft for ft in image_types if any(filename.endswith(ext) for ext in image_types[ft]['extension'])]
     if not filetype:
-        raise ImageFileRejected(DevMsg.FILE_BAD_TYPE)
+        raise ImageValidationError(DevMsg.FILE_BAD_TYPE)
     filetype = filetype[0]
 
     # check mimetype matches expected file type
     if content_type not in image_types[filetype]['mimetypes']:
-        raise ImageFileRejected(DevMsg.FILE_BAD_MIMETYPE)
+        raise ImageValidationError(DevMsg.FILE_BAD_MIMETYPE)
 
     # check image file headers match expected file type
     headers = image_types[filetype]['magic']
     if image_file.read(len(headers[0]) / 2).encode('hex') not in headers:
-        raise ImageFileRejected(DevMsg.FILE_BAD_EXT)
+        raise ImageValidationError(DevMsg.FILE_BAD_EXT)
     # avoid unexpected errors from subsequent modules expecting the fp to be at 0
     image_file.seek(0)
 

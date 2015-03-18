@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 
 from openedx.core.lib.api.permissions import IsUserInUrl
 from ..user_api.accounts.api import set_has_profile_image, get_profile_image_names
-from .images import validate_uploaded_image, generate_profile_images, remove_profile_images, ImageFileRejected
+from .images import validate_uploaded_image, generate_profile_images, remove_profile_images, ImageValidationError
 
 
 class ProfileImageUploadView(APIView):
@@ -45,7 +45,7 @@ class ProfileImageUploadView(APIView):
             # image file validation.
             try:
                 validate_uploaded_image(uploaded_file, uploaded_file.content_type)
-            except ImageFileRejected, exc:
+            except ImageValidationError, exc:
                 return Response(
                     {
                         "developer_message": exc.message,
