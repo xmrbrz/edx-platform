@@ -451,8 +451,11 @@ class DraftModuleStore(MongoModuleStore):
         if draft_loc.revision == MongoRevisionKey.published:
             item = super(DraftModuleStore, self).update_item(xblock, user_id, allow_not_found)
             course_key = xblock.location.course_key
+            bulk_record = self._get_bulk_ops_record(course_key)
+            if self.signal_handler and not bulk_record.active:
+                self.signal_handler.send("course_published", course_key=course_key)
             if isPublish:
-                self._flag_publish_event(course_key, item.location)
+                self._flag_publish_item_event(course_key, item.location)
             return item
 
         if not super(DraftModuleStore, self).has_item(draft_loc):
@@ -727,7 +730,10 @@ class DraftModuleStore(MongoModuleStore):
             bulk_record.dirty = True
             self.collection.remove({'_id': {'$in': to_be_deleted}})
 
-        self._flag_publish_event(course_key, location)
+        if self.signal_handler and not bulk_record.active:
+            self.signal_handler.send("course_published", course_key=course_key)
+
+        self._flag_publish_item_event(course_key, location)
 
         return self.get_item(as_published(location))
 
@@ -742,7 +748,11 @@ class DraftModuleStore(MongoModuleStore):
         self._convert_to_draft(location, user_id, delete_published=True)
 
         course_key = location.course_key
-        self._flag_publish_event(course_key)
+        bulk_record = self._get_bulk_ops_record(course_key)
+        if self.signal_handler and not bulk_record.active:
+            self.signal_handler.send("course_published", course_key=course_key)
+
+        self._flag_publish_item_event(course_key, location)
 
     def revert_to_published(self, location, user_id=None):
         """

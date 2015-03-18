@@ -290,11 +290,11 @@ class BulkOperationsMixin(object):
         """
         return self._get_bulk_ops_record(course_key, ignore_case).active
 
-    def send_bulk_published_signal(self, bulk_ops_record, course_id):
+    def send_bulk_published_item_signal(self, bulk_ops_record, course_id):
         publish_items = bulk_ops_record.pull_publish_items()
         if publish_items:
             item_keys = [item for item in publish_items if item != course_id]
-            self.signal_handler.send("course_published", course_key=course_id, item_keys=item_keys)
+            self.signal_handler.send("course_item_published", course_key=course_id, item_keys=item_keys)
 
 
 class EditInfo(object):
@@ -1310,7 +1310,7 @@ class ModuleStoreWriteBase(ModuleStoreReadBase, ModuleStoreWrite):
         parent.children.append(item.location)
         self.update_item(parent, user_id)
 
-    def _flag_publish_event(self, course_key, location=None):
+    def _flag_publish_item_event(self, course_key, location=None):
         signal_handler = getattr(self, 'signal_handler', None)
         if signal_handler:
             bulk_record = self._get_bulk_ops_record(course_key) if isinstance(self, BulkOperationsMixin) else None
@@ -1318,9 +1318,9 @@ class ModuleStoreWriteBase(ModuleStoreReadBase, ModuleStoreWrite):
                 publish_location = location if location else course_key
                 bulk_record.add_publish_item(publish_location)
             elif location:
-                signal_handler.send("course_published", course_key=course_key, item_keys=[location])
+                signal_handler.send("course_item_published", course_key=course_key, item_keys=[location])
             else:
-                signal_handler.send("course_published", course_key=course_key)
+                signal_handler.send("course_item_published", course_key=course_key)
 
 
 def only_xmodules(identifier, entry_points):

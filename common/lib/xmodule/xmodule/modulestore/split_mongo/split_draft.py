@@ -356,7 +356,7 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
             blacklist=blacklist
         )
 
-        self._flag_publish_event(location.course_key, location)
+        self._flag_publish_item_event(location.course_key, location)
 
         return self.get_item(location.for_branch(ModuleStoreEnum.BranchName.published), **kwargs)
 
@@ -370,7 +370,7 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
             self.delete_item(location, user_id, revision=ModuleStoreEnum.RevisionOption.published_only)
             latest_draft = self.get_item(location.for_branch(ModuleStoreEnum.BranchName.draft), **kwargs)
 
-        self._flag_publish_event(location.course_key)
+        self._flag_publish_item_event(location.course_key, location)
 
         return latest_draft
 
