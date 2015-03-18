@@ -67,8 +67,8 @@ class ProfileImageEndpointTestCase(APITestCase):
         optionally check the correctness of a developer-facing message.
         """
         self.assertEqual(expected_code, response.status_code)
-        if expected_code == 200:
-            self.assertEqual({"status": "success"}, response.data)
+        if expected_code == 204:
+            self.assertIsNone(response.data)
         elif expected_message is not None:
             self.assertEqual(response.data.get('developer_message'), expected_message)
 
@@ -106,7 +106,7 @@ class ProfileImageUploadTestCase(ProfileImageEndpointTestCase):
         Test that an authenticated user can POST to their own upload endpoint.
         """
         response = self.client.post(self.url, {'file': make_image_file()}, format='multipart')
-        self.check_response(response, 200)
+        self.check_response(response, 204)
         self.check_images()
         self.check_has_profile_image()
 
@@ -197,7 +197,7 @@ class ProfileImageRemoveTestCase(ProfileImageEndpointTestCase):
         images.
         """
         response = self.client.post(self.url)
-        self.check_response(response, 200)
+        self.check_response(response, 204)
         self.check_images(False)
         self.check_has_profile_image(False)
 
@@ -223,6 +223,6 @@ class ProfileImageRemoveTestCase(ProfileImageEndpointTestCase):
         staff_client = APIClient()
         staff_client.login(username=staff_user.username, password=TEST_PASSWORD)
         response = self.client.post(self.url)
-        self.check_response(response, 200)
+        self.check_response(response, 204)
         self.check_images(False)
         self.check_has_profile_image(False)

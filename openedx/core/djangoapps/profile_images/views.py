@@ -64,7 +64,7 @@ class ProfileImageUploadView(APIView):
             set_has_profile_image(username, True)
 
         # send client response.
-        return Response({"status": "success"})
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProfileImageRemoveView(APIView):
@@ -87,4 +87,4 @@ class ProfileImageRemoveView(APIView):
         remove_profile_images(get_profile_image_names(username))
 
         # send client response.
-        return Response({"status": "success"})
+        return Response(status=status.HTTP_204_NO_CONTENT)
