@@ -522,6 +522,7 @@ def _validate_email(email):
             u"Email '{email}' format is not valid".format(email=email)
         )
 
+
 def set_has_profile_image(username, has_profile_image=True):
     """
     System (not user-facing) API call used to store whether the user has
@@ -535,6 +536,7 @@ def set_has_profile_image(username, has_profile_image=True):
     profile.has_profile_image = has_profile_image
     profile.save()
 
+
 def get_profile_image_names(username):
     """
     System (not user-facing) API call returning a dict {size:filename} for
@@ -543,6 +545,7 @@ def get_profile_image_names(username):
     This function just proxies to the helper function.
     """
     return _get_profile_image_names(username)
+
 
 def get_profile_image_storage():
     """

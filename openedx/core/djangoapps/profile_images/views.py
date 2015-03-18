@@ -1,4 +1,5 @@
 """
+This module implements the upload and remove endpoints of the profile image api.
 """
 
 from contextlib import closing

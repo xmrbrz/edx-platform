@@ -1,10 +1,13 @@
 """
+Test cases for the upload and remove endpoints of the profile image api.
 """
 
 import os
 from tempfile import NamedTemporaryFile
+import unittest
 
 import ddt
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
 import mock
@@ -107,6 +110,7 @@ class ProfileImageEndpointTestCase(APITestCase):
 
 
 @ddt.ddt
+@unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Profile Image API is only supported in LMS')
 class ProfileImageUploadTestCase(ProfileImageEndpointTestCase):
     """
     Tests for the profile_image upload endpoint.
@@ -251,6 +255,7 @@ class ProfileImageUploadTestCase(ProfileImageEndpointTestCase):
         self.check_images()
 
 
+@unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Profile Image API is only supported in LMS')
 class ProfileImageRemoveTestCase(ProfileImageEndpointTestCase):
     """
     Tests for the profile_image remove endpoint.

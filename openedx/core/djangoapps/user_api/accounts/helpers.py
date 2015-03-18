@@ -78,7 +78,7 @@ def get_profile_image_url_for_user(user, size):
         name = settings.PROFILE_IMAGE_DEFAULT_FILENAME
 
     filename = get_profile_image_filename(name, size)
-    return settings.get_profile_image_storage().url(filename)
+    return get_profile_image_storage().url(filename)
 
 
 def get_profile_image_names(username):
@@ -86,4 +86,4 @@ def get_profile_image_names(username):
     Return a dict {size:filename} for each profile image for a given username.
     """
     name = get_profile_image_name(username)
-    return {size: get_profile_image_filename(name, size) for size in PROFILE_IMAGE_SIZES.values()}
+    return {size: get_profile_image_filename(name, size) for size in _PROFILE_IMAGE_SIZES}
