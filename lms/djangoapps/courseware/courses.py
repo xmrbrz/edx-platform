@@ -26,6 +26,7 @@ import branding
 from util.milestones_helpers import get_required_content, calculate_entrance_exam_score
 from util.module_utils import yield_dynamic_descriptor_descendents
 from opaque_keys.edx.keys import UsageKey
+from opaque_keys import InvalidKeyError
 from .module_render import get_module_for_descriptor
 
 log = logging.getLogger(__name__)
@@ -134,6 +135,8 @@ def course_image_url(course):
             url += '/' + course.course_image
         else:
             url += '/images/course_image.jpg'
+    elif course.course_image == '':
+        url = ''
     else:
         loc = StaticContent.compute_location(course.id, course.course_image)
         url = StaticContent.serialize_asset_key_with_slash(loc)
