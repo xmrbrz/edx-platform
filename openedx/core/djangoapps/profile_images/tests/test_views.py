@@ -130,7 +130,7 @@ class ProfileImageUploadTestCase(ProfileImageEndpointTestCase):
         staff_client = APIClient()
         staff_client.login(username=staff_user.username, password=TEST_PASSWORD)
         response = staff_client.post(self.url, {'file': make_image_file()}, format='multipart')
-        self.check_response(response, 404)
+        self.check_response(response, 403)
         self.check_images(False)
         self.check_has_profile_image(False)
 
@@ -210,7 +210,7 @@ class ProfileImageRemoveTestCase(ProfileImageEndpointTestCase):
         different_client = APIClient()
         different_client.login(username=different_user.username, password=TEST_PASSWORD)
         response = different_client.post(self.url)
-        self.check_response(response, 403)
+        self.check_response(response, 404)
         self.check_images(True)  # thumbnails should remain intact.
         self.check_has_profile_image(True)
 

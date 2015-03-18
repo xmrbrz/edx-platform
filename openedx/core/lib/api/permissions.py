@@ -56,5 +56,18 @@ class IsUserInUrl(permissions.BasePermission):
         # other users, do not let them deduce the existence of an account.
         url_username = request.parser_context.get('kwargs', {}).get('username', '')
         if request.user.username.lower() != url_username.lower():
+            if request.user.is_staff:
+                return False  # staff gets 403
             raise Http404()
         return True
+
+
+class IsUserInUrlOrStaff(IsUserInUrl):
+    """
+    Permission that checks to see if the request user matches the user in the URL or has is_staff access.
+    """
+    def has_permission(self, request, view):
+        if request.user.is_staff:
+            return True
+
+        return super(IsUserInUrlOrStaff, self).has_permission(request, view)
