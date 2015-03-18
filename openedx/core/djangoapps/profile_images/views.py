@@ -10,8 +10,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from openedx.core.lib.api.permissions import IsUserInUrl
 from ..user_api.accounts.api import set_has_profile_image, get_profile_image_names
-
 from .images import validate_uploaded_image, generate_profile_images, remove_profile_images, ImageFileRejected
 
 
@@ -24,17 +24,12 @@ class ProfileImageUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser,)
 
     authentication_classes = (OAuth2Authentication, SessionAuthentication)
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, IsUserInUrl)
 
     def post(self, request, username):
         """
         HTTP POST handler.
         """
-
-        # validate request:
-        # ensure authenticated user is either same as username, or is staff.
-        if request.user.username != username and not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
 
         # validate request:
         # ensure any file was sent
