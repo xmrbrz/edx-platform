@@ -364,10 +364,10 @@ header.global-new {
     height: 74px;
     margin: 0 auto;
     padding: 17px 0;
-    max-width: 1180px;
+    max-width: grid-width(12);
 
     &:not(.rwd) {
-      min-width: 880px;
+      min-width: grid-width(9);
     }
   }
 
