@@ -1481,7 +1481,6 @@ def create_account_with_params(request, params):
 
         # next, link the account with social auth, if provided
         if should_link_with_social_auth:
-            request.user = user
             request.social_strategy = social_utils.load_strategy(backend=params['provider'], request=request)
             social_access_token = params.get('access_token')
             if not social_access_token:
@@ -1495,7 +1494,7 @@ def create_account_with_params(request, params):
             request.session[pipeline.AUTH_ENTRY_KEY] = pipeline.AUTH_ENTRY_REGISTER_API
             pipeline_user = None
             try:
-                pipeline_user = request.social_strategy.backend.do_auth(social_access_token)
+                pipeline_user = request.social_strategy.backend.do_auth(social_access_token, user=user)
             except HTTPError:
                 pass
             if not pipeline_user or not isinstance(pipeline_user, User):

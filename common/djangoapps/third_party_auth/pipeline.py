@@ -480,11 +480,9 @@ def ensure_user_information(strategy, auth_entry, user=None, *args, **kwargs):
             return HttpResponseBadRequest()
 
     elif auth_entry == AUTH_ENTRY_REGISTER_API:
-        # Return the user object that was stored in the HTTP request.
-        # The user was stored after the user's account was created and before this pipeline started.
-        if user and user != strategy.request.user:
+        if not user:
             return HttpResponseBadRequest()
-        return {'user': strategy.request.user}
+        return {'user': user}
 
     elif auth_entry == AUTH_ENTRY_LOGIN or auth_entry == AUTH_ENTRY_LOGIN_2:
         if not user or user_inactive:

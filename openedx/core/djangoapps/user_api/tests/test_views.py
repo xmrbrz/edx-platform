@@ -1570,12 +1570,13 @@ class ThirdPartyRegistrationTestMixin(ThirdPartyOAuthTestMixin):
     def _verify_user_existence(self, user_exists, social_link_exists, user_is_active=None, username=None):
         """Verifies whether the user object exists."""
         users = User.objects.filter(username=(username if username else "test_username"))
-        self.assertEquals(len(users), 1 if user_exists else 0)
+        self.assertEquals(users.exists(), user_exists)
         if user_exists:
             self.assertEquals(users[0].is_active, user_is_active)
-        if social_link_exists:
-            social_users = UserSocialAuth.objects.filter(user=users[0], provider=self.BACKEND)
-            self.assertEquals(len(social_users), 1)
+            self.assertEqual(
+                UserSocialAuth.objects.filter(user=users[0], provider=self.BACKEND).exists(),
+                social_link_exists
+            )
         else:
             self.assertEquals(UserSocialAuth.objects.count(), 0)
 
