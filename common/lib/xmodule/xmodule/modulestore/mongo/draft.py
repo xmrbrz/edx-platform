@@ -439,7 +439,7 @@ class DraftModuleStore(MongoModuleStore):
         # convert the subtree using the original item as the root
         self._breadth_first(convert_item, [location])
 
-    def update_item(self, xblock, user_id, allow_not_found=False, force=False, isPublish=False, **kwargs):
+    def update_item(self, xblock, user_id, allow_not_found=False, force=False, isPublish=False, child_update=None, **kwargs):
         """
         See superclass doc.
         In addition to the superclass's behavior, this method converts the unit to draft if it's not
@@ -454,7 +454,11 @@ class DraftModuleStore(MongoModuleStore):
             bulk_record = self._get_bulk_ops_record(course_key)
             if self.signal_handler and not bulk_record.active:
                 self.signal_handler.send("course_published", course_key=course_key)
-            if isPublish:
+            if isPublish or (
+                item.category in DIRECT_ONLY_CATEGORIES and (
+                    child_update is None or child_update in DIRECT_ONLY_CATEGORIES
+                )
+            ):
                 self._flag_publish_item_event(course_key, item.location)
             return item
 

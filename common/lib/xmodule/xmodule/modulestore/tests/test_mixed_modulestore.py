@@ -1964,8 +1964,8 @@ class TestMixedModuleStore(CourseComparisonTest):
             dest_store = self.store._get_modulestore_by_type(ModuleStoreEnum.Type.split)
             self.assertCoursesEqual(source_store, source_course_key, dest_store, dest_course_id)
 
-    @skip("PLAT-449 XModule TestMixedModuleStore intermittent test failure")
-    @ddt.data(ModuleStoreEnum.Type.mongo, ModuleStoreEnum.Type.split)
+    #@skip("PLAT-449 XModule TestMixedModuleStore intermittent test failure")
+    #@ddt.data(ModuleStoreEnum.Type.mongo, ModuleStoreEnum.Type.split)
     def test_course_publish_signal_firing(self, default):
         with MongoContentstoreBuilder().build() as contentstore:
             self.store = MixedModuleStore(
@@ -2004,22 +2004,32 @@ class TestMixedModuleStore(CourseComparisonTest):
                         self.store.publish(block.location, self.user_id)
                         self.assertEqual(receiver.call_count, 3)
 
-                    # Test a draftable block type, which needs to be explicitly published.
+                    # Test a draftable block type, which needs to be explicitly published
+                    # Nest it within the typical structure
                     receiver.reset_mock()
-                    block = self.store.create_child(self.user_id, course.location, 'problem')
+                    section = self.store.create_item(self.user_id, course.id, 'chapter')
                     self.assertEqual(receiver.call_count, 1)
 
-                    self.store.update_item(block, self.user_id)
-                    self.assertEqual(receiver.call_count, 1)
-
-                    self.store.publish(block.location, self.user_id)
+                    subsection = self.store.create_child(self.user_id, section.location, 'sequential')
                     self.assertEqual(receiver.call_count, 2)
 
-                    self.store.unpublish(block.location, self.user_id)
+                    unit = self.store.create_child(self.user_id, subsection.location, 'vertical')
+                    self.assertEqual(receiver.call_count, 2)
+
+                    block = self.store.create_child(self.user_id, unit.location, 'problem')
+                    self.assertEqual(receiver.call_count, 2)
+
+                    self.store.update_item(block, self.user_id)
+                    self.assertEqual(receiver.call_count, 2)
+
+                    self.store.publish(block.location, self.user_id)
                     self.assertEqual(receiver.call_count, 3)
 
-                    self.store.delete_item(block.location, self.user_id)
+                    self.store.unpublish(block.location, self.user_id)
                     self.assertEqual(receiver.call_count, 4)
+
+                    self.store.delete_item(block.location, self.user_id)
+                    self.assertEqual(receiver.call_count, 5)
 
                     # Test course re-runs
                     receiver.reset_mock()
@@ -2037,3 +2047,127 @@ class TestMixedModuleStore(CourseComparisonTest):
                         create_if_not_present=True,
                     )
                     self.assertEqual(receiver.call_count, 2)
+
+    # Add Tests here
+    # @ddt.data(ModuleStoreEnum.Type.mongo, ModuleStoreEnum.Type.split)
+    def test_item_published_signals(self, store_type):
+        with MongoContentstoreBuilder().build() as contentstore:
+            self.store = MixedModuleStore(
+                contentstore=contentstore,
+                create_modulestore_instance=create_modulestore_instance,
+                mappings={},
+                signal_handler=SignalHandler(MixedModuleStore),
+                **self.OPTIONS
+            )
+            self.addCleanup(self.store.close_all_connections)
+
+            with self.store.default_store(store_type):
+                with mock_signal_receiver(SignalHandler.course_item_published) as receiver:
+                    self.assertEqual(receiver.call_count, 0)
+
+                    # Add a new section / subsection / unit
+                    course = self.store.create_course('org_a', 'course_b', 'run_c', self.user_id)
+                    self.assertEqual(receiver.call_count, 1)
+
+                    # def create_child(self, user_id, parent_usage_key, block_type, block_id=None, **kwargs):
+                    # from nose.tools import set_trace; set_trace();
+                    section = self.store.create_item(self.user_id, course.id, 'chapter')
+                    self.assertEqual(receiver.call_count, 2)
+
+                    subsection = self.store.create_child(self.user_id, section.location, 'sequential')
+                    self.assertEqual(receiver.call_count, 3)
+
+                    unit = self.store.create_child(self.user_id, subsection.location, 'vertical')
+                    self.assertEqual(receiver.call_count, 3)
+
+                    block = self.store.create_child(self.user_id, unit.location, 'html')
+                    self.assertEqual(receiver.call_count, 3)
+
+                    self.store.publish(unit.location, self.user_id)
+                    self.assertEqual(receiver.call_count, 4)
+
+                    # Edit unit
+                    receiver.reset_mock()
+                    block.content = "Here is some content"
+                    self.assertEqual(receiver.call_count, 0)
+
+                    # Publish Edited unit
+                    self.store.publish(unit.location, self.user_id)
+                    self.assertEqual(receiver.call_count, 1)
+
+                    # Add a new unit
+                    receiver.reset_mock()
+                    unit2 = self.store.create_child(self.user_id, subsection.location, 'vertical')
+                    self.assertEqual(receiver.call_count, 0)
+
+                    # edit block within existing unit
+                    block.content = "Here is some content"
+                    self.assertEqual(receiver.call_count, 0)
+
+                    # publish subsection
+                    self.store.publish(unit.location, self.user_id)
+                    self.assertEqual(receiver.call_count, 1)
+
+                    # Do same operations under the umbrella of a bulk operation
+                    # check 1 trigger with specific triggers
+                    receiver.reset_mock()
+                    with self.store.bulk_operations(course.id):
+                        self.assertEqual(receiver.call_count, 0)
+
+                        bulk_section = self.store.create_item(self.user_id, course.id, 'chapter')
+                        self.assertEqual(receiver.call_count, 0)
+
+                        bulk_subsection = self.store.create_child(self.user_id, bulk_section.location, 'sequential')
+                        self.assertEqual(receiver.call_count, 0)
+
+                        bulk_unit = self.store.create_child(self.user_id, bulk_subsection.location, 'vertical')
+                        self.assertEqual(receiver.call_count, 0)
+
+                        bulk_block = self.store.create_child(self.user_id, bulk_unit.location, 'html')
+                        self.assertEqual(receiver.call_count, 0)
+
+                        self.store.publish(bulk_unit.location, self.user_id)
+                        self.assertEqual(receiver.call_count, 0)
+
+                        # Edit unit
+                        bulk_block.content = "Here is some content"
+                        self.assertEqual(receiver.call_count, 0)
+
+                        # Publish Edited unit
+                        self.store.publish(bulk_unit.location, self.user_id)
+                        self.assertEqual(receiver.call_count, 0)
+
+                        # Add a new unit
+                        bulk_unit2 = self.store.create_child(self.user_id, bulk_subsection.location, 'vertical')
+                        self.assertEqual(receiver.call_count, 0)
+
+                        # edit existing unit
+                        bulk_block.content = "Here is some content"
+                        self.assertEqual(receiver.call_count, 0)
+
+                        # publish subsection
+                        self.store.publish(bulk_subsection.location, self.user_id)
+                        self.assertEqual(receiver.call_count, 0)
+
+                    self.assertEqual(receiver.call_count, 1)
+
+                    # now for some more intereting moments in time...
+
+                    # import a course
+                    # check 1 trigger with published courses
+
+                    # delete a unit
+
+                    x = 1
+
+    def test_draft_item_published_signals(self):
+        self.test_item_published_signals(ModuleStoreEnum.Type.mongo)
+
+    def test_split_item_published_signals(self):
+        self.test_item_published_signals(ModuleStoreEnum.Type.split)
+
+    def test_draft_course_publish_signal_firing(self):
+        self.test_course_publish_signal_firing(ModuleStoreEnum.Type.mongo)
+
+    def test_split_course_publish_signal_firing(self):
+        self.test_course_publish_signal_firing(ModuleStoreEnum.Type.split)

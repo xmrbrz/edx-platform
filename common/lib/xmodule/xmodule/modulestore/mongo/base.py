@@ -1250,7 +1250,7 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
             else:
                 parent.children.insert(kwargs.get('position'), xblock.location)
 
-            self.update_item(parent, user_id)
+            self.update_item(parent, user_id, child_update=xblock)
 
         return xblock
 
