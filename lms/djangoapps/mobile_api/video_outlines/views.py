@@ -9,6 +9,7 @@ general XBlock representation in this rather specialized formatting.
 from functools import partial
 
 from django.http import Http404, HttpResponse
+from mobile_api.models import MobileApiConfig
 
 from rest_framework import generics
 from rest_framework.response import Response
@@ -78,15 +79,25 @@ class VideoSummaryList(generics.ListAPIView):
 
     @mobile_course_access(depth=None)
     def list(self, request, course, *args, **kwargs):
+        video_profiles = self._csv_to_list(MobileApiConfig.video_profiles)
         video_outline = list(
             BlockOutline(
                 course.id,
                 course,
-                {"video": partial(video_summary, course)},
+                {"video": partial(video_summary, video_profiles)},
                 request,
+                video_profiles,
             )
         )
         return Response(video_outline)
+
+    def _csv_to_list(self, csv_data):
+        """Converts a csv to a list"""
+        return_list = []
+        split_data = csv_data.split(',')
+        for item in split_data:
+            return_list.append(item)
+        return return_list
 
 
 @mobile_view()

@@ -13,15 +13,12 @@ from edxval.api import (
     get_video_info_for_course_and_profiles, ValInternalError
 )
 
-# Video profiles in priority order
-VIDEO_PROFILES = ["mobile_low", "mobile_high", "youtube"]
-
 
 class BlockOutline(object):
     """
     Serializes course videos, pulling data from VAL and the video modules.
     """
-    def __init__(self, course_id, start_block, block_types, request):
+    def __init__(self, course_id, start_block, block_types, request, video_profiles):
         """Create a BlockOutline using `start_block` as a starting point."""
         self.start_block = start_block
         self.block_types = block_types
@@ -30,7 +27,7 @@ class BlockOutline(object):
         self.local_cache = {}
         try:
             self.local_cache['course_videos'] = get_video_info_for_course_and_profiles(
-                unicode(course_id), VIDEO_PROFILES
+                unicode(course_id), video_profiles
             )
         except ValInternalError:  # pragma: nocover
             self.local_cache['course_videos'] = {}
@@ -162,7 +159,7 @@ def find_urls(course_id, block, child_to_parent, request):
     return unit_url, section_url
 
 
-def video_summary(course, course_id, video_descriptor, request, local_cache):
+def video_summary(video_profiles, course_id, video_descriptor, request, local_cache):
     """
     returns summary dict for the given video module
     """
@@ -172,7 +169,7 @@ def video_summary(course, course_id, video_descriptor, request, local_cache):
     # Get highest priority video to populate backwards compatible field
     default_encoded_video = None
     if encoded_videos:
-        for profile in VIDEO_PROFILES:
+        for profile in video_profiles:
             if encoded_videos.get(profile):
                 default_encoded_video = encoded_videos.get(profile)
                 break
@@ -189,6 +186,7 @@ def video_summary(course, course_id, video_descriptor, request, local_cache):
     if default_encoded_video:
         duration = default_encoded_video.get('duration')
         size = default_encoded_video.get('file_size')
+
     else:
         duration = None
         size = 0
