@@ -169,16 +169,16 @@ def video_summary(course, course_id, video_descriptor, request, local_cache):
     # Get encoded videos
     encoded_videos = local_cache['course_videos'].get(video_descriptor.edx_video_id, {})
 
-    # Get the default video for backwards compatibility
-    val_profile = None
+    # Get highest priority video to populate backwards compatible field
+    default_encoded_video = None
     if encoded_videos:
         for profile in VIDEO_PROFILES:
             if encoded_videos.get(profile):
-                val_profile = encoded_videos.get(profile)
+                default_encoded_video = encoded_videos.get(profile)
                 break
 
-    if val_profile:
-        video_url = val_profile['url']
+    if default_encoded_video:
+        video_url = default_encoded_video['url']
     # Then fall back to VideoDescriptor fields for video URLs
     elif video_descriptor.html5_sources:
         video_url = video_descriptor.html5_sources[0]
@@ -186,9 +186,9 @@ def video_summary(course, course_id, video_descriptor, request, local_cache):
         video_url = video_descriptor.source
 
     # Get duration/size, else default
-    if val_profile:
-        duration = val_profile.get('duration')
-        size = val_profile.get('file_size')
+    if default_encoded_video:
+        duration = default_encoded_video.get('duration')
+        size = default_encoded_video.get('file_size')
     else:
         duration = None
         size = 0

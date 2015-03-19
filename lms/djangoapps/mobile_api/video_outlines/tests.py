@@ -427,7 +427,6 @@ class TestVideoSummaryList(
     def test_no_mobile_low_profile(self):
         """Tests VideoSummaryList when there is no mobile_low profile"""
         self.login_and_enroll()
-        self.maxDiff = None
         edx_video_id = "testing_mobile_high"
         api.create_video({
             'edx_video_id': edx_video_id,
@@ -466,7 +465,7 @@ class TestVideoSummaryList(
             'video_url': u'http://val.edx.org/val/video_high.mp4',
             'duration': 12.0,
             'transcripts': {
-                'en': 'http://testserver/api/mobile/v0.5/video_outlines/transcripts/{}/testing_mobile_high_video/en'.format(self.course.id)
+                'en': 'http://testserver/api/mobile/v0.5/video_outlines/transcripts/{}/testing_mobile_high_video/en'.format(self.course.id)  # pylint: disable=line-too-long
             },
             'encoded_videos': {
                 u'mobile_high': {
