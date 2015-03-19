@@ -237,28 +237,40 @@
             templateSelector: '#field_textarea-tpl',
 
             events: {
-                'change textarea': 'saveValue'
+                'focusout textarea': 'finishEditing',
+                'click .account-settings-field-wrapper': 'editValue',
+                'click .account-settings-field-placeholder': 'editValue'
             },
+            errorMessage: '<i class="fa fa-exclamation-triangle message-error"></i>',
+            invalidInputMessagePrefix: '<i class="fa fa-exclamation-triangle message-invalid-input"></i>',
+            inProgressMessage: '<i class="fa fa-spinner message-in-progress"></i>',
+            successMessagePrefix: '<i class="fa fa-check message-success"></i>',
+
 
             initialize: function (options) {
                 this._super(options);
-                _.bindAll(this, 'render', 'fieldValue', 'updateValueInField', 'saveValue');
+                _.bindAll(this, 'render', 'fieldValue', 'updateValueInField', 'finishEditing', 'editValue');
+                if (this.modelValue() ) {
+                    this.state = 'display'
+                } else {
+                    this.state = 'placeholder'
+                }
+                this.helpMessage = '<i class="icon fa fa-pencil"></i>';
                 this.listenTo(this.model, "change:" + this.options.valueAttribute, this.updateValueInField);
             },
 
             render: function () {
                 this.$el.html(this.template({
                     title: this.options.title,
-                    selectOptions: this.options.options,
-                    message: this.helpMessage,
-                    showElement: _.isUndefined(this.options.showElement) ? true : this.options.showElement
+                    value: this.currentValue(),
+                    state: this.state,
+                    message: this.helpMessage
                 }));
-                this.updateValueInField();
                 return this;
             },
 
             fieldValue: function () {
-                return this.$('.account-settings-field-value textarea').val();
+                return this.$('.account-settings-field-edit').val();
             },
 
             updateValueInField: function () {
@@ -269,6 +281,41 @@
                 var attributes = {};
                 attributes[this.options.valueAttribute] = this.fieldValue();
                 this.saveAttributes(attributes);
+            },
+
+            currentValue: function () {
+                if (_.isNull(this.newValue) || _.isUndefined(this.newValue)) {
+                  return _.isNull(this.modelValue()) ? '' : this.modelValue();
+                } else {
+                  return this.newValue;
+                }
+            },
+
+            finishEditing: function(event) {
+
+                this.newValue = this.fieldValue();
+                if (this.newValue) {
+                    this.state = 'display';
+                } else {
+                    this.state = 'placeholder';
+                }
+                this.render();
+
+                if (this.newValue !== this.modelValue()) {
+                    this.saveValue();
+                }
+            },
+
+            editValue: function (event) {
+                if (this.state !== 'edit') {
+                    this.state = 'edit';
+                    this.render();
+                    this.$('.account-settings-field-edit').focus();
+                }
+            },
+
+            successMessage: function() {
+                return this.successMessagePrefix;
             }
         });
 

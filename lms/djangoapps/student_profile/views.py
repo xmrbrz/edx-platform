@@ -56,7 +56,8 @@ def learner_profile(request, username):
         'preferences_api_url': reverse('preferences_api', kwargs={'username': username}),
         'account_settings_page_url': reverse('account_settings'),
         'info': {
-            'show_visibility_select_section': request.user.username == username,
+            'own_profile': request.user.username == username or request.user.is_staff,
+            'readonly': request.user.username != username,
             'country_options': country_options,
             'language_options': language_options
         }

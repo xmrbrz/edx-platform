@@ -1,0 +1,31 @@
+<div class="profile-data">
+
+    <span class="user-image"><img src="<%- profileImageUrl %>"></span>
+
+    <span class="user-info">
+
+        <span class="user-name"><%- gettext(username) %></span>
+
+        <% if (profileVisibility) { %>
+            <div class="user-country">
+                <span><%- gettext(country) %></span>
+            </div>
+
+            <div class="user-language">
+                <span><%- gettext(language) %></span>
+            </div>
+        <% } %>
+
+    </span>
+
+    <% if (profileVisibility) { %>
+        <div class="about-me">
+            <span class="title"><%- gettext("About me") %></span>
+
+            <div class="detail">
+                <span name="bio"><%- gettext(bio) %></span>
+            </div>
+        </div>
+    <% } %>
+
+</div>

@@ -10,7 +10,7 @@
 <%block name="pagetitle">${_("Account Settings")}</%block>
 
 <%block name="header_extras">
-    % for template_name in ["account_settings", "field_dropdown", "field_link", "field_readonly", "field_text"]:
+    % for template_name in ["account_settings", "field_dropdown", "field_link", "field_readonly", "field_text", "field_textarea"]:
         <script type="text/template" id="${template_name}-tpl">
             <%static:include path="student_account/${template_name}.underscore" />
         </script>

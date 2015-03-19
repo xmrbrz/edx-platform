@@ -10,13 +10,16 @@
 <%block name="pagetitle">${_("Learner Profile")}</%block>
 
 <%block name="header_extras">
-    % for template_name in ["learner_profile"]:
+    % for template_name in ["learner_profile_edit", "learner_profile_readonly"]:
         <script type="text/template" id="${template_name}-tpl">
             <%static:include path="student_profile/${template_name}.underscore" />
         </script>
     % endfor
     <script type="text/template" id="field_dropdown-tpl">
         <%static:include path="student_account/field_dropdown.underscore" />
+    </script>
+    <script type="text/template" id="field_textarea-tpl">
+        <%static:include path="student_account/field_textarea.underscore" />
     </script>
 </%block>
 

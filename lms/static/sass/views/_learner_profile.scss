@@ -2,6 +2,11 @@
   margin: $baseline/2 0 $baseline/2 $baseline*2;
 }
 
+.profile-visibility-readonly {
+  pointer-events: none;
+  cursor: default;
+}
+
 .profile-visibility-title {
   font-size: 0.9em;
   font-weight: bold;
@@ -42,7 +47,7 @@
   font-weight: bold
 }
 
-$selectWidth: 320px;
+$selectWidth: 340px;
 
 i {
   color: $gray;
@@ -51,14 +56,28 @@ i {
 .profile-data-userinfo-country {
   select {
     width: $selectWidth;
-    @include margin-left($baseline/2);
+
+    :not(.profile-visibility-readonly) {
+    	@include margin-left($baseline/2);
+    }
+  }
+
+  .account-settings-field {
+    display: inline;
   }
 }
 
 .profile-data-userinfo-language {
   select {
     width: $selectWidth;
-    @include margin-left($baseline/2);
+
+    :not(.profile-visibility-readonly) {
+    	@include margin-left($baseline/2);
+    }
+  }
+
+  .account-settings-field {
+    display: inline;
   }
 }
 
@@ -79,12 +98,15 @@ i {
   textarea {
     resize: none;
     height: 120px;
-    width: 470px;
   }
 }
 
 .profile-data-useraboutme-limited-message {
   color: $gray-l2;
+}
+
+.aboutme-container {
+  width: 470px;
 }
 
 
@@ -123,7 +145,7 @@ i {
 
 .profile-data-set-state {
 	select {
-      padding: $baseline/2;
+      padding: $baseline/2 0 $baseline/2;
       background-color: transparent;
       background-image: none;
       -webkit-appearance: none;
@@ -132,6 +154,7 @@ i {
       box-shadow: none;
       -webkit-box-shadow: none;
       -moz-box-shadow: none;
+      color: $gray;
 	}
 
 	textarea {

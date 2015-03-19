@@ -1,0 +1,66 @@
+<%
+    var profileVisibility = profileVisibility == 'all_users';
+%>
+
+<% if (!readonly) { %>
+    <% if (info['own_profile']) { %>
+        <div class="profile-visibility">
+            <label class="profile-visibility-title">
+                <%- gettext('edX learners can see my:') %>
+            </label>
+            <span class="profile-visibility-value">
+                <select name="select" class="profile-visibility-select">
+                    <option value="private" <%- !profileVisibility ? 'selected' : '' %> ><%- gettext('Limited Profile') %></option>
+                    <option value="all_users" <%- profileVisibility ? 'selected' : '' %> ><%- gettext('Full Profile') %></option>
+                </select>
+            </span>
+
+            <% if (showBirthYearMessage) { %>
+                <div class="profile-visibility-message">
+                    <%- gettext('Your profile is set to limited because you have not set your birth year yet.') %>
+                    <a class="link-to-account-settings" href="<%- accountSettingsPageUrl %>"><%- gettext('Account Settings page') %></a>
+                </div>
+            <% } %>
+
+        </div>
+    <% } %>
+<% } %>
+
+<div class="profile-data">
+
+        <div class="profile-data-userimage">
+            <img src="http://www.teachthought.com/wp-content/uploads/2012/07/edX-120x120.jpg">
+        </div>
+
+        <div class="profile-data-userinfo">
+
+            <label class="profile-data-info-title">
+                <%- gettext(username) %>
+            </label>
+
+            <% if (profileVisibility) { %>
+                <div class="profile-data-userinfo-country">
+                    <i class="icon fa fa-map-marker fa-fw"></i>
+
+                </div>
+
+                <div class="profile-data-userinfo-language">
+                    <i class="icon fa fa-comment fa-flip-horizontal fa-fw"></i>
+
+                </div>
+            <% } %>
+
+        </div>
+
+        <% if (profileVisibility) { %>
+            <div class="profile-data-useraboutme">
+                <div class="aboutme-container">
+                </div>
+            </div>
+        <% } else { %>
+            <label class="profile-data-useraboutme-limited-message">
+                <%- gettext('This edX learner is not currently sharing their profile details.') %>
+            </label>
+        <% } %>
+
+</div>

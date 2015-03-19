@@ -1,0 +1,41 @@
+
+<% if (state === 'placeholder') { %>
+
+    <div class="account-settings-field-placeholder">
+
+        <div class="account-settings-field-placeholder-heading">
+            About Me
+        </div>
+
+        <div class="account-settings-field-placeholder-body">
+            Tell other edX learners a little about yourself, where you're from, what your interests are ,
+            why you joined edX, what you hope to learn...
+        </div>
+
+    </div>
+
+<% } else { %>
+
+    <div class="account-settings-field-wrapper">
+
+        <div class="account-settings-field-heading">
+            <label class="account-settings-field-title">
+                About me
+            </label>
+            <div class="account-settings-field-message">
+                <%= message %>
+            </div>
+        </div>
+
+        <div class="account-settings-field-value">
+            <% if (state === 'edit') { %>
+                <textarea class="account-settings-field-edit"><%- value %></textarea>
+            <% } else { %>
+                <div class="account-settings-field-display">
+                    <%- value %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+<% } %>
