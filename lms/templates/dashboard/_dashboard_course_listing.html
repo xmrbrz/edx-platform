@@ -115,7 +115,7 @@ from student.helpers import (
               % endif
 
               % if share_settings:
-                <% share_url = urllib.quote_plus(request.META['HTTP_HOST'] + course_target) %>
+                <% share_url = urllib.quote_plus(request.build_absolute_uri(course_target)) %>
                 <% share_text = 'Marketing copy goes here' %>
                 <% share_window_name = 'shareWindow' %>
                 <% share_window_config = 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=640, height=480' %>
