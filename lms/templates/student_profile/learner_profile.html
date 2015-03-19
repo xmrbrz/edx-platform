@@ -15,12 +15,12 @@
             <%static:include path="student_profile/${template_name}.underscore" />
         </script>
     % endfor
-    <script type="text/template" id="field_dropdown-tpl">
-        <%static:include path="student_account/field_dropdown.underscore" />
-    </script>
-    <script type="text/template" id="field_textarea-tpl">
-        <%static:include path="student_account/field_textarea.underscore" />
-    </script>
+
+    % for template_name in ["field_dropdown", "field_textarea", "field_readonly"]:
+        <script type="text/template" id="${template_name}-tpl">
+            <%static:include path="student_account/${template_name}.underscore" />
+        </script>
+    % endfor
 </%block>
 
 <div class="learner-profile-container"

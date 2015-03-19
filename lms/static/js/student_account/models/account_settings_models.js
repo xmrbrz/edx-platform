@@ -26,6 +26,7 @@
                 if (_.isNull(response)) {
                     return {};
                 }
+
                 // Currently when a non-staff user access someone else profile, there is no direct information
                 // present to determine the profile visibility/privacy configuration/settings.
                 // So here we will try to guess a user's profile privacy settings
@@ -48,13 +49,6 @@
                 var privacyAttribute = {};
                 privacyAttribute['profilePrivacy'] = _private ? 'private': 'all_users';
                 this.set(privacyAttribute, { silent: true });
-
-                // There is an inconsistency in data being sent from server
-                // When a user sees her own profile, server send the `language` attribute in model
-                // But when user view someone else profile, server send `languages` attribute in model
-                // So for consistency we will replace `languages` with `language` until things are consistent
-                response['language'] = response['languages'];
-                delete response['languages'];
 
   	            return response;
             }

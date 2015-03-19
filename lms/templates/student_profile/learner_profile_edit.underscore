@@ -1,17 +1,13 @@
-<%
-    var profileVisibility = profileVisibility == 'all_users';
-%>
-
-<% if (!readonly) { %>
-    <% if (info['own_profile']) { %>
+<div class="profile <%- readonly ? 'profile-other' : 'profile-self' %>">
+    <% if (!readonly) { %>
         <div class="profile-visibility">
             <label class="profile-visibility-title">
                 <%- gettext('edX learners can see my:') %>
             </label>
             <span class="profile-visibility-value">
                 <select name="select" class="profile-visibility-select">
-                    <option value="private" <%- !profileVisibility ? 'selected' : '' %> ><%- gettext('Limited Profile') %></option>
-                    <option value="all_users" <%- profileVisibility ? 'selected' : '' %> ><%- gettext('Full Profile') %></option>
+                    <option value="private" <%- !profileIsPublic ? 'selected' : '' %> ><%- gettext('Limited Profile') %></option>
+                    <option value="all_users" <%- profileIsPublic ? 'selected' : '' %> ><%- gettext('Full Profile') %></option>
                 </select>
             </span>
 
@@ -24,43 +20,20 @@
 
         </div>
     <% } %>
-<% } %>
 
-<div class="profile-data">
+    <div class="profile-photo">
+        <img src="http://www.teachthought.com/wp-content/uploads/2012/07/edX-120x120.jpg">
+    </div>
 
-        <div class="profile-data-userimage">
-            <img src="http://www.teachthought.com/wp-content/uploads/2012/07/edX-120x120.jpg">
-        </div>
+    <div class="profile-fields profile-fields-section-one">
+    </div>
 
-        <div class="profile-data-userinfo">
-
-            <label class="profile-data-info-title">
-                <%- gettext(username) %>
-            </label>
-
-            <% if (profileVisibility) { %>
-                <div class="profile-data-userinfo-country">
-                    <i class="icon fa fa-map-marker fa-fw"></i>
-
-                </div>
-
-                <div class="profile-data-userinfo-language">
-                    <i class="icon fa fa-comment fa-flip-horizontal fa-fw"></i>
-
-                </div>
-            <% } %>
-
-        </div>
-
-        <% if (profileVisibility) { %>
-            <div class="profile-data-useraboutme">
-                <div class="aboutme-container">
-                </div>
-            </div>
-        <% } else { %>
+    <div class="profile-fields profile-fields-section-two">
+        <% if (!profileIsPublic) { %>
             <label class="profile-data-useraboutme-limited-message">
                 <%- gettext('This edX learner is not currently sharing their profile details.') %>
             </label>
         <% } %>
+    </div>
 
 </div>

@@ -40,7 +40,7 @@ def learner_profile(request, username):
         # Re-alphabetize language options
         released_languages.sort()
 
-    language_options = [language for language in settings.LANGUAGES if language[0] in released_languages]
+    language_options = [language for language in settings.LANGUAGES]
 
     country_options = [
         (country_code, unicode(country_name))
@@ -49,14 +49,12 @@ def learner_profile(request, username):
         )
     ]
 
-    # import pdb; pdb.set_trace()
-    # get_user_preferences(request.user, username=username)
     context = {
         'accounts_api_url': reverse("accounts_api", kwargs={'username': username}),
         'preferences_api_url': reverse('preferences_api', kwargs={'username': username}),
         'account_settings_page_url': reverse('account_settings'),
         'info': {
-            'own_profile': request.user.username == username or request.user.is_staff,
+            'has_preferences_access': request.user.username == username or request.user.is_staff,
             'readonly': request.user.username != username,
             'country_options': country_options,
             'language_options': language_options

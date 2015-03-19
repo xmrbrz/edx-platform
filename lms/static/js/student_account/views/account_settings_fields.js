@@ -195,22 +195,33 @@
             templateSelector: '#field_dropdown-tpl',
 
             events: {
-                'change select': 'saveValue'
+                'click': 'startEditing',
+                'change select': 'finishEditing',
+                'focusout select': 'finishEditing'
             },
 
             initialize: function (options) {
                 this._super(options);
-                _.bindAll(this, 'render', 'fieldValue', 'updateValueInField', 'saveValue');
+                _.bindAll(this, 'render', 'fieldValue', 'updateValueInField', 'saveValue', 'finishEditing', 'startEditing', 'displayValue');
+                this.alwaysEditable = _.isUndefined(this.options.alwaysEditable) ? true : this.options.alwaysEditable;
+
+                if (this.alwaysEditable) {
+                    this.state = 'edit'
+                } else {
+                    this.state = 'display'
+                }
+
                 this.listenTo(this.model, "change:" + this.options.valueAttribute, this.updateValueInField);
             },
 
             render: function () {
                 this.$el.html(this.template({
+                    state: this.state,
                     title: this.options.title,
+                    iconName: this.options.iconName,
                     required: this.options.required,
                     selectOptions: this.options.options,
-                    message: this.helpMessage,
-                    showElement: _.isUndefined(this.options.showElement) ? true : this.options.showElement
+                    message: this.helpMessage
                 }));
                 this.updateValueInField();
                 return this;
@@ -220,15 +231,63 @@
                 return this.$('.account-settings-field-value select').val();
             },
 
+            displayValue: function (value) {
+                if (value) {
+                    var option = _.find(this.options.options, function(option) { return option[0] == value; });
+                    return option[1];
+                } else {
+                    return '';
+                }
+            },
+
+            currentValue: function () {
+                if (_.isNull(this.newValue) || _.isUndefined(this.newValue)) {
+                    return _.isNull(this.modelValue()) ? '' : this.modelValue();
+                } else {
+                    return this.newValue;
+                }
+            },
+
             updateValueInField: function () {
-                this.$('.account-settings-field-value select').val(this.modelValue() || "");
+                if (this.state === 'display') {
+                    var displayValue = this.displayValue(this.currentValue()) || this.options.placeholderValue || '';
+                    this.$('.account-settings-field-value').html(displayValue);
+                } else {
+                    this.$('.account-settings-field-value select').val(this.currentValue() || "");
+                }
+            },
+
+            startEditing: function (event) {
+                if (this.state !== 'edit') {
+                    this.state = 'edit';
+                    this.render();
+                    this.$('.account-settings-field-value select').focus();
+                }
+            },
+
+            finishEditing: function(event) {
+                if (this.fieldValue() !== this.modelValue()) {
+                    this.saveValue();
+                } else {
+                    if (!this.alwaysEditable) {
+                        this.state = 'display';
+                    }
+                    this.render();
+                }
             },
 
             saveValue: function () {
                 var attributes = {};
                 attributes[this.options.valueAttribute] = this.fieldValue();
                 this.saveAttributes(attributes);
+            },
 
+            showSuccessMessage: function() {
+                this._super();
+                if (!this.alwaysEditable) {
+                    this.state = 'display';
+                    this.render();
+                }
             }
         });
 
@@ -237,50 +296,40 @@
             templateSelector: '#field_textarea-tpl',
 
             events: {
-                'focusout textarea': 'finishEditing',
-                'click .account-settings-field-wrapper': 'editValue',
-                'click .account-settings-field-placeholder': 'editValue'
+                'click .account-settings-field-wrapper': 'startEditing',
+                'click .account-settings-field-placeholder': 'startEditing',
+                'focusout textarea': 'finishEditing'
             },
-            errorMessage: '<i class="fa fa-exclamation-triangle message-error"></i>',
-            invalidInputMessagePrefix: '<i class="fa fa-exclamation-triangle message-invalid-input"></i>',
-            inProgressMessage: '<i class="fa fa-spinner message-in-progress"></i>',
-            successMessagePrefix: '<i class="fa fa-check message-success"></i>',
-
 
             initialize: function (options) {
                 this._super(options);
-                _.bindAll(this, 'render', 'fieldValue', 'updateValueInField', 'finishEditing', 'editValue');
-                if (this.modelValue() ) {
-                    this.state = 'display'
-                } else {
-                    this.state = 'placeholder'
-                }
+
+                _.bindAll(this, 'render', 'fieldValue', 'updateView', 'saveValue', 'finishEditing', 'startEditing', 'currentValue');
+
                 this.helpMessage = '<i class="icon fa fa-pencil"></i>';
-                this.listenTo(this.model, "change:" + this.options.valueAttribute, this.updateValueInField);
+
+                if (this.modelValue()) {
+                    this.state = 'display';
+                } else {
+                    this.state = 'placeholder';
+                }
+
+                this.listenTo(this.model, "change:" + this.options.valueAttribute, this.updateView);
             },
 
             render: function () {
                 this.$el.html(this.template({
+                    state: this.state,
                     title: this.options.title,
                     value: this.currentValue(),
-                    state: this.state,
-                    message: this.helpMessage
+                    message: this.helpMessage,
+                    placeholderValue: this.options.placeholderValue
                 }));
                 return this;
             },
 
             fieldValue: function () {
-                return this.$('.account-settings-field-edit').val();
-            },
-
-            updateValueInField: function () {
-                this.$('.account-settings-field-value textarea').val(this.modelValue() || "");
-            },
-
-            saveValue: function () {
-                var attributes = {};
-                attributes[this.options.valueAttribute] = this.fieldValue();
-                this.saveAttributes(attributes);
+                return this.$('.account-settings-field-value textarea').val().trim();
             },
 
             currentValue: function () {
@@ -291,32 +340,56 @@
                 }
             },
 
-            finishEditing: function(event) {
+            updateView: function () {
+                if (this.state === 'edit') {
+                    return;
+                }
 
-                this.newValue = this.fieldValue();
-                if (this.newValue) {
+                if (this.modelValue()) {
                     this.state = 'display';
                 } else {
                     this.state = 'placeholder';
                 }
                 this.render();
-
-                if (this.newValue !== this.modelValue()) {
-                    this.saveValue();
-                }
             },
 
-            editValue: function (event) {
+            startEditing: function (event) {
                 if (this.state !== 'edit') {
                     this.state = 'edit';
                     this.render();
-                    this.$('.account-settings-field-edit').focus();
+                    this.$('.account-settings-field-value textarea').focus();
                 }
             },
 
-            successMessage: function() {
-                return this.successMessagePrefix;
+            finishEditing: function(event) {
+                if (this.fieldValue() !== this.modelValue()) {
+                    this.saveValue();
+                } else {
+                    if (this.modelValue()) {
+                        this.state = 'display';
+                    } else {
+                        this.state = 'placeholder';
+                    }
+                    this.render();
+                }
+            },
+
+            saveValue: function () {
+                var attributes = {};
+                attributes[this.options.valueAttribute] = this.fieldValue();
+                this.saveAttributes(attributes);
+            },
+
+            showSuccessMessage: function() {
+                this._super();
+                if (this.modelValue()) {
+                    this.state = 'display';
+                } else {
+                    this.state = 'placeholder';
+                }
+                this.render();
             }
+
         });
 
         AccountSettingsFieldViews.LinkFieldView = AccountSettingsFieldViews.FieldView.extend({

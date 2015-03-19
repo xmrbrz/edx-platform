@@ -1,8 +1,8 @@
 ;(function (define, undefined) {
     'use strict';
     define([
-        'gettext', 'jquery', 'underscore', 'backbone', 'js/student_account/views/account_settings_fields'
-    ], function (gettext, $, _, Backbone, AccountSettingsFieldViews) {
+        'gettext', 'jquery', 'underscore', 'backbone'
+    ], function (gettext, $, _, Backbone) {
 
         var LearnerProfileEditView = Backbone.View.extend({
 
@@ -19,7 +19,7 @@
                     info: this.options.info,
                     accountSettingsPageUrl: this.options.accountSettingsPageUrl,
                     username: this.options.model.get('username'),
-                    profileVisibility: this.getProfileVisibility(),
+                    profileIsPublic: this.getProfileVisibility() == 'all_users',
                     showBirthYearMessage: _.isNull(this.options.model.get('year_of_birth')),
                     readonly: this.options.info.readonly
                 }));
@@ -29,38 +29,27 @@
             },
 
             renderFields: function() {
-                var countryView = new AccountSettingsFieldViews.DropdownFieldView({
-                    model: this.options.model,
-                    valueAttribute: "country",
-                    required: true,
-                    helpMessage: '',
-                    options: this.options.info['country_options'],
-                    showElement: false
-                });
-                this.$('.profile-data-userinfo-country').append(countryView.render().el);
+                var view = this;
 
-                var languageView = new AccountSettingsFieldViews.DropdownFieldView({
-                    model: this.options.model,
-                    valueAttribute: "language",
-                    required: true,
-                    helpMessage: '',
-                    options: this.options.info['language_options'],
-                    showElement: false
-                });
-                this.$('.profile-data-userinfo-language').append(languageView.render().el);
+                this.$('.profile-fields-section-one').append(this.options.usernameFieldView.render().el);
 
-                var bioView = new AccountSettingsFieldViews.TextareaFieldView({
-                    model: this.options.model,
-                    valueAttribute: "bio",
-                    helpMessage: '',
-                    options: this.options.info['bio'],
-                    showElement: false
-                });
-                this.$('.aboutme-container').append(bioView.render().el);
+                if (this.getProfileVisibility() == 'all_users') {
+                    _.each(this.options.sectionOneFieldViews, function (fieldView, index) {
+                        fieldView.undelegateEvents();
+                        view.$('.profile-fields-section-one').append(fieldView.render().el);
+                        fieldView.delegateEvents();
+                    });
+
+                    _.each(this.options.sectionTwoFieldViews, function (fieldView, index) {
+                        fieldView.undelegateEvents();
+                        view.$('.profile-fields-section-two').append(fieldView.render().el);
+                        fieldView.delegateEvents();
+                    });
+                }
             },
 
             getProfileVisibility: function () {
-                if (this.options.info.own_profile) {
+                if (this.options.info.has_preferences_access) {
                     return this.options.preferencesModel.get('account_privacy');
                 } else {
                     return this.model.get('profilePrivacy');

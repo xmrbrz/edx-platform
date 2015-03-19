@@ -66,7 +66,7 @@
                                     required: true,
                                     refreshPageOnSave: true,
                                     helpMessage: gettext("This setting controls your default edX language."),
-                                    options: fields_data['language']['options'],
+                                    options: fields_data['language']['options']
                                 })
                             },
                         ]
