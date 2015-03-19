@@ -1,5 +1,5 @@
 ################################################
-edX Platform User API Overview
+EdX Platform User API Overview
 ################################################
 
 Use the edX Platform User API you to view and update account information.
@@ -12,14 +12,14 @@ You can use the edX Platform User API for web, desktop, and mobile
 applications.
 
 *************************************
-edX Platform User API Version 1
+EdX Platform User API Version 1
 *************************************
 
 The edX latform User API is currently at version 0. We plan on making
 significant enhancements to this API.
 
 **********************************************
-edX Platform User Enrollment API Capabilities
+EdX Platform User Enrollment API Capabilities
 **********************************************
 
 With the edX Platform User API, you can:

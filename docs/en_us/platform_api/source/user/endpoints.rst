@@ -1,5 +1,5 @@
 ################################################
-edX Platform User API Endpoints
+EdX Platform User API Endpoints
 ################################################
 
 Use the edX Platform User API to view information about users and update your
