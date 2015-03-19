@@ -66,7 +66,7 @@ def _get_discussion_modules(course):
 
     def has_required_keys(module):
         for key in ('discussion_id', 'discussion_category', 'discussion_target'):
-            if getattr(module, key) is None:
+            if getattr(module, key, None) is None:
                 log.warning("Required key '%s' not in discussion %s, leaving out of category map" % (key, module.location))
                 return False
         return True
