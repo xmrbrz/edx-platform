@@ -20,6 +20,7 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
     A subclass of Split that supports a dual-branch fall-back versioning framework
         with a Draft branch that falls back to a Published branch.
     """
+
     def create_course(self, org, course, run, user_id, skip_auto_publish=False, **kwargs):
         """
         Creates and returns the course.
@@ -185,7 +186,8 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
         """
         with self.bulk_operations(location.course_key):
             if isinstance(location, LibraryUsageLocator):
-                branches_to_delete = [ModuleStoreEnum.BranchName.library]  # Libraries don't yet have draft/publish support
+                # Libraries don't yet have draft/publish support
+                branches_to_delete = [ModuleStoreEnum.BranchName.library]
             elif revision == ModuleStoreEnum.RevisionOption.published_only:
                 branches_to_delete = [ModuleStoreEnum.BranchName.published]
             elif revision == ModuleStoreEnum.RevisionOption.all:
@@ -201,6 +203,7 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
                     ]
                 )
 
+            self._flag_publish_event(location.course_key, location)
             for branch in branches_to_delete:
                 branched_location = location.for_branch(branch)
                 parent_loc = self.get_parent_location(branched_location)
@@ -356,7 +359,7 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
             blacklist=blacklist
         )
 
-        self._flag_publish_item_event(location.course_key, location)
+        self._flag_publish_event(location.course_key, location)
 
         return self.get_item(location.for_branch(ModuleStoreEnum.BranchName.published), **kwargs)
 
@@ -369,8 +372,6 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
         with self.bulk_operations(location.course_key):
             self.delete_item(location, user_id, revision=ModuleStoreEnum.RevisionOption.published_only)
             latest_draft = self.get_item(location.for_branch(ModuleStoreEnum.BranchName.draft), **kwargs)
-
-        self._flag_publish_item_event(location.course_key, location)
 
         return latest_draft
 

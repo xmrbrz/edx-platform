@@ -47,6 +47,7 @@ class DraftModuleStore(MongoModuleStore):
     This module also includes functionality to promote DRAFT modules (and their children)
     to published modules.
     """
+
     def get_item(self, usage_key, depth=0, revision=None, **kwargs):
         """
         Returns an XModuleDescriptor instance for the item at usage_key.
@@ -452,14 +453,12 @@ class DraftModuleStore(MongoModuleStore):
             item = super(DraftModuleStore, self).update_item(xblock, user_id, allow_not_found)
             course_key = xblock.location.course_key
             bulk_record = self._get_bulk_ops_record(course_key)
-            if self.signal_handler and not bulk_record.active:
-                self.signal_handler.send("course_published", course_key=course_key)
             if isPublish or (
                 item.category in DIRECT_ONLY_CATEGORIES and (
                     child_update is None or child_update in DIRECT_ONLY_CATEGORIES
                 )
             ):
-                self._flag_publish_item_event(course_key, item.location)
+                self._flag_publish_event(course_key, item.location)
             return item
 
         if not super(DraftModuleStore, self).has_item(draft_loc):
@@ -734,10 +733,7 @@ class DraftModuleStore(MongoModuleStore):
             bulk_record.dirty = True
             self.collection.remove({'_id': {'$in': to_be_deleted}})
 
-        if self.signal_handler and not bulk_record.active:
-            self.signal_handler.send("course_published", course_key=course_key)
-
-        self._flag_publish_item_event(course_key, location)
+        self._flag_publish_event(course_key, location)
 
         return self.get_item(as_published(location))
 
@@ -753,10 +749,8 @@ class DraftModuleStore(MongoModuleStore):
 
         course_key = location.course_key
         bulk_record = self._get_bulk_ops_record(course_key)
-        if self.signal_handler and not bulk_record.active:
-            self.signal_handler.send("course_published", course_key=course_key)
 
-        self._flag_publish_item_event(course_key, location)
+        self._flag_publish_event(course_key, location)
 
     def revert_to_published(self, location, user_id=None):
         """

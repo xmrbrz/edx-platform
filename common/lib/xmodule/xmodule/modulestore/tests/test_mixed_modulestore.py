@@ -2004,8 +2004,9 @@ class TestMixedModuleStore(CourseComparisonTest):
                         self.store.publish(block.location, self.user_id)
                         self.assertEqual(receiver.call_count, 3)
 
-                    # Test a draftable block type, which needs to be explicitly published
-                    # Nest it within the typical structure
+                    # Test a draftable block type, which needs to be explicitly published, and nest it within the
+                    # normal structure - this is important because some implementors change the parent when adding a
+                    # non-published child; if parent is in DIRECT_ONLY_CATEGORIES then this should not fire the event
                     receiver.reset_mock()
                     section = self.store.create_item(self.user_id, course.id, 'chapter')
                     self.assertEqual(receiver.call_count, 1)
@@ -2013,23 +2014,25 @@ class TestMixedModuleStore(CourseComparisonTest):
                     subsection = self.store.create_child(self.user_id, section.location, 'sequential')
                     self.assertEqual(receiver.call_count, 2)
 
+                    # 'units' and 'blocks' are draftable types
+                    receiver.reset_mock()
                     unit = self.store.create_child(self.user_id, subsection.location, 'vertical')
-                    self.assertEqual(receiver.call_count, 2)
+                    self.assertEqual(receiver.call_count, 0)
 
-                    block = self.store.create_child(self.user_id, unit.location, 'problem')
-                    self.assertEqual(receiver.call_count, 2)
+                    block = self.store.create_child(self.user_id, course.location, 'problem')
+                    self.assertEqual(receiver.call_count, 0)
 
                     self.store.update_item(block, self.user_id)
+                    self.assertEqual(receiver.call_count, 0)
+
+                    self.store.publish(unit.location, self.user_id)
+                    self.assertEqual(receiver.call_count, 1)
+
+                    self.store.unpublish(unit.location, self.user_id)
                     self.assertEqual(receiver.call_count, 2)
 
-                    self.store.publish(block.location, self.user_id)
+                    self.store.delete_item(unit.location, self.user_id)
                     self.assertEqual(receiver.call_count, 3)
-
-                    self.store.unpublish(block.location, self.user_id)
-                    self.assertEqual(receiver.call_count, 4)
-
-                    self.store.delete_item(block.location, self.user_id)
-                    self.assertEqual(receiver.call_count, 5)
 
                     # Test course re-runs
                     receiver.reset_mock()
@@ -2062,7 +2065,7 @@ class TestMixedModuleStore(CourseComparisonTest):
             self.addCleanup(self.store.close_all_connections)
 
             with self.store.default_store(store_type):
-                with mock_signal_receiver(SignalHandler.course_item_published) as receiver:
+                with mock_signal_receiver(SignalHandler.course_published) as receiver:
                     self.assertEqual(receiver.call_count, 0)
 
                     # Add a new section / subsection / unit

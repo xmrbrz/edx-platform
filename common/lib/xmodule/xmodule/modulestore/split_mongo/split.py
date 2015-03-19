@@ -268,10 +268,7 @@ class SplitBulkWriteMixin(BulkOperationsMixin):
                 self.db_connection.update_course_index(bulk_write_record.index, from_index=bulk_write_record.initial_index)
 
         if dirty and emit_signals:
-            signal_handler = getattr(self, 'signal_handler', None)
-            if signal_handler:
-                signal_handler.send("course_published", course_key=course_key)
-            self.send_bulk_published_item_signal(bulk_write_record, course_key)
+            self.send_bulk_published_signal(bulk_write_record, course_key)
 
     def get_course_index(self, course_key, ignore_case=False):
         """
@@ -2379,6 +2376,7 @@ class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
         """
         for child in blocks[block_key].fields.get('children', []):
             self._remove_subtree(BlockKey(*child), blocks)
+            self._flag_publish_event(block_key.course_key, block_key)
         del blocks[block_key]
 
     def delete_course(self, course_key, user_id):

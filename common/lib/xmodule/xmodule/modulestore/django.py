@@ -79,12 +79,10 @@ class SignalHandler(object):
        do the actual work.
 
     """
-    course_published = django.dispatch.Signal(providing_args=["course_key"])
-    course_item_published = django.dispatch.Signal(providing_args=["course_key", "item_keys"])
+    course_published = django.dispatch.Signal(providing_args=["course_key", "item_keys"])
 
     _mapping = {
-        "course_published": course_published,
-        "course_item_published": course_item_published,
+        "course_published": course_published
     }
 
     def __init__(self, modulestore_class):
