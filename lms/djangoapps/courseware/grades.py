@@ -574,7 +574,7 @@ def get_score(user, problem_descriptor, module_creator, field_data_cache, submis
         total = student_module.max_grade
 
     elif max_score is not None and settings.FEATURES.get("ENABLE_MAX_SCORE_CACHE"):
-        correct = 0
+        correct = 0.0
         total = max_score
 
     else:
