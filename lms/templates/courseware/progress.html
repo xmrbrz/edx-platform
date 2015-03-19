@@ -50,29 +50,45 @@ from django.utils.http import urlquote_plus
 
       <header>
         <h1>${_("Course Progress for Student '{username}' ({email})").format(username=student.username, email=student.email)}</h1>
-      </header>
 
-       %if show_generate_cert_btn:
-           <div id="course-success">
-             %if passed:
-                % if is_downloadable and download_url:
-                    <a class="btn" href="${download_url}" target="_blank"
-                    title="${_('You can download your certificate as a PDF. You can then print your certificate or share it with others.')}">
-                    ${_("Download Your Certificate")}
-                    </a>
-                %elif is_generating:
-                    <button disabled="disabled">${_('Create Your Certificate')}</button>
-                    <p class="text-center">${_("Creating certificate")}</p>
-                %else:
-                    <button data-endpoint="${reverse('generate_user_cert', args=[unicode(course.id)])}" id="btn_generate_cert">${_('Create Your Certificate')}</button>
-                %endif
-             %else:
-                <button disabled="disabled">${_('Create Your Certificate')}</button>
-                <p class="text-center">${_("Your certificate will be available when you pass the course.")}</p>
-             %endif
-           </div>
-           <div id="errors-info" class="text-center"></div>
-       %endif
+            %if show_generate_cert_btn:
+                <div class="wrapper-msg wrapper-auto-cert">
+                    <div class="auto-cert-message" id="course-success">
+                        <div class="has-actions">
+                        %if passed:
+                            % if is_downloadable and download_url:
+                            <div class="msg-content">
+                                <h2 class="title">Your certificate is available</h2>
+                                <p class="copy">You can now download your certificate as a PDF. If you keep working and receive a higher grade, you can <a href="#">request an updated certificate</a>.</p>
+                            </div>
+                            <div class="nav-actions">
+                                <a class="btn" href="${download_url}" target="_blank" title="${_('PDF will open in a new browser window or tab.')}">
+                                    ${_("Download Your Certificate")}
+                                </a>
+                            </div>
+                            %elif is_generating:
+                            <div class="msg-content">
+                                <h2 class="title">We're working on it...</h2>
+                                <p class="copy">We're creating your certificate. You can keep working in your courses and a link to it will appear here and on your Dashboard whe it is ready.</p>
+                            </div>
+                            <div class="nav-actions">
+                                <button class="btn" disabled="disabled">${_('Create Your Certificate')}</button>
+                            </div>
+                            %else:
+                            <div class="msg-content">
+                                <h2 class="title">Congratulations, you qualified for a certificate!</h2>
+                                <p class="copy">You can keep working for a higher grade, or request your certificate now.</p>
+                            </div>
+                            <div class="nav-actions">
+                                <button class="btn" data-endpoint="${reverse('generate_user_cert', args=[unicode(course.id)])}" id="btn_generate_cert">${_('Request Certificate')}</button>
+                            </div>
+                            %endif
+                        %endif
+                    </div>
+                    <div id="errors-info" class="text-center"></div>
+                </div>
+            %endif
+      </header>
 
       %if not course.disable_progress_graph:
         <div id="grade-detail-graph" aria-hidden="true"></div>

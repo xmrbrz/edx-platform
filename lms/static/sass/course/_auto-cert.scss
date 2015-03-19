@@ -1,0 +1,32 @@
+.wrapper-auto-cert {
+    display: table;
+    width: 100%;
+    clear: both;
+    margin: 0; // Overrides .wrapper-msg
+    padding: 0; // Overrides .wrapper-msg
+    background: transparent; // Overrides .wrapper-msg
+
+    .auto-cert-message {
+        margin: $baseline 0;
+        padding: $baseline;
+        border: 1px solid $m-blue-d1;
+        border-radius: 3px;
+        background: $m-blue-l4;
+
+        .has-actions {
+
+            .msg-content {
+                width: flex-grid(9,12);
+            }
+
+            .nav-actions {
+                width: flex-grid(3,12);
+                font-size: 1rem; // Overriding huge button font, wtf
+
+                .btn {
+                    @extend %btn-primary-blue;
+                }
+            }
+        }
+    }
+}
