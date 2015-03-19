@@ -7,7 +7,7 @@ define(["backbone", "underscore"], function(Backbone, _) {
     },
 
     initialize: function(attributes) {
-      if(attributes.asString) {
+      if(attributes && attributes.asString) {
         this.setFromString(attributes.asString);
         this.unset("asString");
       }
