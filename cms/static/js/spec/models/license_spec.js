@@ -5,7 +5,7 @@ define(["js/models/license"], function(LicenseModel) {
     });
 
     it("should be empty by default", function() {
-      expect(this.model.get("type")).toEqual("");
+      expect(this.model.get("type")).toBeNull();
     });
   })
 })
