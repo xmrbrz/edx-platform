@@ -97,11 +97,14 @@
         }
 
         function toggleCourseActionsDropdown(event) {
-            var dropdown = $('.wrapper-action-more').find('.actions-dropdown')
 
+            // Toggle the visibility control for the selected element
+            var course_number = $(this).data('course-number');
+            var dropdown_selector = '#actions-dropdown-' + course_number;
+            $(dropdown_selector).toggleClass('is-visible');
+
+            // I'm not really sure what this does
             event.preventDefault();
-
-            dropdown.toggleClass('is-visible');
 
             // add BI event here
 
