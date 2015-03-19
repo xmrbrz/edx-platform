@@ -149,7 +149,7 @@ class CapaHtmlRenderTest(unittest.TestCase):
         self.assertEqual(rendered_html.tag, "div")
 
         # Expect question text is in a <p> child
-        question_element = rendered_html.find("p")
+        question_element = rendered_html.find("label")
         self.assertEqual(question_element.text, "Test question")
 
         # Expect that the response has been turned into a <span>

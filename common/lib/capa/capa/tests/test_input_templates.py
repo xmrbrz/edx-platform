@@ -722,7 +722,8 @@ class OptionInputTemplateTest(TemplateTestCase):
 
     def test_label(self):
         xml = self.render_to_xml(self.context)
-        xpath = "//select[@aria-label='%s']" % self.context['label']
+        input_id = "input_" + self.context['id']
+        xpath = "//select[@id='%s']" % input_id
         self.assert_has_xpath(xml, xpath, self.context)
 
 
