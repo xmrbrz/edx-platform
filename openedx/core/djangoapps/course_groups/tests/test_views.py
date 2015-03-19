@@ -1212,7 +1212,7 @@ class CourseCohortDiscussionTopicsTestCase(CohortViewsTestCase):
         self.create_cohorted_discussions()
 
         response = self.get_handler(self.course, handler=cohort_discussion_topics)
-
+        start_date = response['inline_discussions']['subcategories']['Chapter']['start_date']
         expected_response = {
             "course_wide_discussions": {
                 'children': ['Topic B'],
@@ -1220,7 +1220,8 @@ class CourseCohortDiscussionTopicsTestCase(CohortViewsTestCase):
                     'Topic B': {
                         'sort_key': 'A',
                         'is_cohorted': True,
-                        'id': topic_name_to_id(self.course, "Topic B")
+                        'id': topic_name_to_id(self.course, "Topic B"),
+                        'start_date': response['course_wide_discussions']['entries']['Topic B']['start_date']
                     }
                 }
             },
@@ -1233,9 +1234,12 @@ class CourseCohortDiscussionTopicsTestCase(CohortViewsTestCase):
                             'Discussion': {
                                 'sort_key': None,
                                 'is_cohorted': True,
-                                'id': topic_name_to_id(self.course, "Topic A")
+                                'id': topic_name_to_id(self.course, "Topic A"),
+                                'start_date': start_date
                             }
-                        }
+                        },
+                        'sort_key': 'Chapter',
+                        'start_date': start_date
                     }
                 },
                 'children': ['Chapter']

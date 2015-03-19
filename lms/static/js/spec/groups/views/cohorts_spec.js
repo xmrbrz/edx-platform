@@ -1165,7 +1165,7 @@ define(['backbone', 'jquery', 'js/common_helpers/ajax_helpers', 'js/common_helpe
 
                         // verify the success message.
                         expect(courseWideView.$(courseWideDiscussionsSaveButtonCss).prop('disabled')).toBeTruthy();
-                        verifyMessage('Your changes have been saved', 'confirmation');
+                        verifyMessage('Your changes have been saved.', 'confirmation');
                     });
 
                     it('shows an appropriate message when subsequent "GET" returns HTTP500', function() {

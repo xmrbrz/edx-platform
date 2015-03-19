@@ -698,7 +698,7 @@ class CohortDiscussionTopicsTest(UniqueCourseTest, CohortTestMixin):
 
         # verifies that changes saved successfully.
         confirmation_message = self.cohort_management_page.get_cohort_discussions_message(key=key)
-        self.assertEqual("Changes Saved.", confirmation_message)
+        self.assertEqual("Your changes have been saved.", confirmation_message)
 
         # save button disabled again.
         self.assertTrue(self.cohort_management_page.is_save_button_disabled(key))

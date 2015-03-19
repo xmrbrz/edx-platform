@@ -134,7 +134,7 @@ def _sort_map_entries(category_map, sort_alpha):
     category_map["children"] = [x[0] for x in sorted(things, key=lambda x: x[1]["sort_key"])]
 
 
-def get_discussion_category_map(course, cohorted_if_in_list=False):
+def get_discussion_category_map(course, cohorted_if_in_list=False, exclude_unstarted=True):
     """
     Returns the category map for course-wide and inline discussions.
 
@@ -254,15 +254,15 @@ def get_discussion_category_map(course, cohorted_if_in_list=False):
 
     _sort_map_entries(category_map, course.discussion_sort_alpha)
 
-    return _filter_unstarted_categories(category_map)
+    return _filter_unstarted_categories(category_map) if exclude_unstarted else category_map
 
 
-def get_discussion_categories_ids(course):
+def get_discussion_categories_ids(course, cohorted_if_in_list=False, exclude_unstarted=False):
     """
     Returns a list of available ids of categories for the course.
     """
     ids = []
-    queue = [get_discussion_category_map(course)]
+    queue = [get_discussion_category_map(course, cohorted_if_in_list, exclude_unstarted)]
     while queue:
         category_map = queue.pop()
         for child in category_map["children"]:
