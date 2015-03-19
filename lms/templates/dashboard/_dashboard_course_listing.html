@@ -131,41 +131,41 @@ from student.helpers import (
                   <ul class="share-buttons">
                     <% print share_settings %>
                     % if share_settings.get('FACEBOOK_SHARING', False):
-                    <li>
-                      <% facebook_url = 'https://www.facebook.com/sharer/sharer.php?u=' + share_url + '&t=' + share_text %>
-                      <a
-                        data-tooltip="${_('Share on Facebook')}"
-                        class="action action-facebook"
-                        aria-haspopup="true"
-                        aria-expanded="false"
-                        href="${facebook_url}"
-                        target="_blank"
-                        title="Share on Facebook"
-                        onclick="window.open('${facebook_url}', '${share_window_name}', '${share_window_config}'); return false;">
-                        <span class="sr">Facebook</span>
-                        <i class="fa fa-facebook" aria-hidden="true"></i>
-                      </a>
-                    </li>
+                      <% facebook_url = 'https://www.facebook.com/sharer/sharer.php?u=' + share_url %>
+                      <li>
+                        <a
+                          data-tooltip="${_('Share on Facebook')}"
+                          class="action action-facebook"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                          href="${facebook_url}"
+                          target="_blank"
+                          title="Share on Facebook"
+                          onclick="window.open('${facebook_url}', '${share_window_name}', '${share_window_config}'); return false;">
+                          <span class="sr">Facebook</span>
+                          <i class="fa fa-facebook" aria-hidden="true"></i>
+                        </a>
+                      </li>
                     % endif
                     % if share_settings.get('TWITTER_SHARING', False):
-                    <li>
                       <% twitter_url = 'https://twitter.com/intent/tweet?text=' + share_text + ':%20'  + share_url %>
-                      <a
-                        data-tooltip="${_('Share on Twitter')}"
-                        class="action action-twitter"
-                        aria-haspopup="true"
-                        aria-expanded="false"
-                        href="${twitter_url}"
-                        target="_blank"
-                        title="Share on Twitter"
-                        href="${twitter_url}"
-                        target="_blank"
-                        title="Tweet"
-                        onclick="window.open('${twitter_url}', '${share_window_name}', '${share_window_config}'); return false;">
-                        <span class="sr">Twitter</span>
-                        <i class="fa fa-twitter" aria-hidden="true"></i>
-                      </a>
-                    </li>
+                      <li>
+                        <a
+                          data-tooltip="${_('Share on Twitter')}"
+                          class="action action-twitter"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                          href="${twitter_url}"
+                          target="_blank"
+                          title="Share on Twitter"
+                          href="${twitter_url}"
+                          target="_blank"
+                          title="Tweet"
+                          onclick="window.open('${twitter_url}', '${share_window_name}', '${share_window_config}'); return false;">
+                          <span class="sr">Twitter</span>
+                          <i class="fa fa-twitter" aria-hidden="true"></i>
+                        </a>
+                      </li>
                     % endif
                   </ul>
                 </div>
