@@ -1,7 +1,7 @@
 .. _edX Platform User API Version 0:
 
 #################################
-edX Platform User API Version 0
+EdX Platform User API Version 0
 #################################
 
 .. toctree::

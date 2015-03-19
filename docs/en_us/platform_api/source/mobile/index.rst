@@ -1,7 +1,7 @@
 .. _edX Platform Mobile API Version 0.5:
 
 #####################################
-edX Platform Mobile API Version 0.5
+EdX Platform Mobile API Version 0.5
 #####################################
 
 .. toctree::

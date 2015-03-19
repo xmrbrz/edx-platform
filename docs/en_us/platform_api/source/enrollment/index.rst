@@ -1,8 +1,8 @@
-.. _edX Platform Enrollment API Version 1:
+.. _edX Platform Enrollment API Version 1.0:
 
-#####################################
-edX Platform Enrollment API Version 1
-#####################################
+########################################
+EdX Platform Enrollment API Version 1.0
+########################################
 
 .. toctree::
     :maxdepth: 2

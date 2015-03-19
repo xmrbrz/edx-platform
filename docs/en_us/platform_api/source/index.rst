@@ -1,5 +1,5 @@
 ##################
-edX Platform APIs
+EdX Platform APIs
 ##################
 
 .. toctree::

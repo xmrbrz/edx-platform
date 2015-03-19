@@ -1,8 +1,8 @@
-################################
-Platform Mobile User API Module
-################################
+####################################
+EdX Platform Mobile User API Module
+####################################
 
-This page describes how to use the platform mobile user API to:
+This page describes how to use the edX Platform Mobile User API to:
 
 * `Get User Details`_
 * `Get a User's Course Enrollments`_

@@ -78,9 +78,9 @@ class AccountView(APIView):
 
                 * goals: The textual representation of the user's goals, or null.
 
-            If a user without "is_staff" access requests account information for
-            a different user, only a subset of these fields is returned.
-            The fields returned depend on the configuration setting
+            If a user who does not have "is_staff" access requests account
+            information for a different user, only a subset of these fields is
+            returned. The fields returned depend on the configuration setting
             ACCOUNT_VISIBILITY_CONFIGURATION, and the visibility preference of
             the user for whom data is requested.
 
@@ -93,7 +93,7 @@ class AccountView(APIView):
 
         **Response Values for PATCH**
 
-            Users can only modify their own account information. If the user
+            Users can modify only their own account information. If the user
             attempts to modify another user's account, a 404 error is returned.
 
             If no user exists with the specified username, a 404 error is

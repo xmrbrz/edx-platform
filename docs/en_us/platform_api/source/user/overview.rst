@@ -2,7 +2,7 @@
 edX Platform User API Overview
 ################################################
 
-The edX Platform User API enables you to view and update account information.
+Use the edX Platform User API you to view and update account information.
 
 The edX Platform User API uses Representational State Transfer (REST) design
 principles and supports the JavaScript Object Notation (JSON) data-interchange
